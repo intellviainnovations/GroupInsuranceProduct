@@ -1,0 +1,19 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repo hygiene checks
+        run: bash scripts/check_repo.sh
+  # Build, test, lint, dependency/secret scans and the release-bundle job are added
+  # once ADR-0001 (technology stack) is Accepted.

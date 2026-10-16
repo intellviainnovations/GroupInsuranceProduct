@@ -1,0 +1,10 @@
+.git
+.github
+.claude
+docs
+scripts
+release
+CLAUDE.md
+.env*
+*.pem
+*.key
