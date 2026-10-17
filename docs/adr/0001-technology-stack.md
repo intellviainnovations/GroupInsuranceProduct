@@ -14,7 +14,7 @@
 ## Options to evaluate
 | Dimension | Candidates / questions |
 |---|---|
-| Backend language/framework | Choose from what the team can maintain and the bank's security team accepts. |
+| Backend language/framework | **Proposed (product owner, 2026-10-17): Python with FastAPI**, for a lean, API-first backend. Still to confirm: Python and ASGI server availability on bank hosts (Q8), dependency footprint and offline wheel packaging, and that the bank's infosec accepts the open-source dependencies (the clearance checklist asks for patched, vulnerability-free libraries). |
 | Database | A mainstream relational database already approved or supported by the bank. |
 | Frontend | A mainstream SPA or server-rendered framework; no exotic build chains. |
 | Packaging | Container images vs VM image vs native installer, depending on what the bank can run offline. |
