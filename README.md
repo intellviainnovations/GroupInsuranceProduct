@@ -11,6 +11,7 @@ Bancassurance web application for bank employees to sell insurance partners' pro
 | `docs/specs/` | Requirements, domain rules, acceptance criteria |
 | `docs/adr/` | Architecture decision records |
 | `docs/contracts/` | Interface definitions (insurer adapter, APIs) |
+| `docs/security/` | Bank security-clearance control matrix and review evidence |
 | `docs/templates/` | Task handoff and result templates |
 | `docs/agents/` | Playbook for the main-session orchestrator |
 | `.claude/agents/` | Subagent definitions |

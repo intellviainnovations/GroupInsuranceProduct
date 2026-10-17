@@ -16,7 +16,7 @@ if [ -n "$bad" ]; then
 fi
 
 # 3. Release allowlist must not include internal-only paths.
-if grep -Ev '^\s*(#|$)' release/allowlist.txt | grep -Eq '^(\.claude|\.github|docs/(adr|specs|agents|templates|contracts)|scripts)/?'; then
+if grep -Ev '^\s*(#|$)' release/allowlist.txt | grep -Eq '^(\.claude|\.github|docs/(adr|specs|agents|templates|contracts|security)|scripts)/?'; then
   echo "allowlist includes internal-only paths"; fail=1
 fi
 

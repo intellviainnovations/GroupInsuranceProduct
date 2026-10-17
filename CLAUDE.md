@@ -23,4 +23,5 @@ Deliverables are signed bundles built from `release/allowlist.txt`. UAT/producti
 
 ## Agents
 - Main-session playbook: `docs/agents/orchestrator.md` (subagents cannot spawn subagents, so the orchestrator runs as the main session).
-- Subagents: `.claude/agents/` (architect, qa). More are added as the build starts (backend, adapter, frontend, reviewer, release).
+- Subagents: `.claude/agents/` (architect, qa, backend, reviewer). More are added as the build starts (adapter, frontend, release).
+- Bank security clearance: follow `docs/security/clearance-matrix.md` (owner: reviewer). Controls need evidence; the bank's original checklist workbook is not stored in this repo.
