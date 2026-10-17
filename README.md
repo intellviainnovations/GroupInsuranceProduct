@@ -1,6 +1,6 @@
 # GroupInsuranceProduct
 
-Bancassurance web application for bank employees to sell insurance partners' products. Group policies first (personal accident, health without pre-medical checks, SHG-linked hospital cash), retail policies and mobile later. Deployed on the bank's on-prem or private-cloud infrastructure.
+Bancassurance web application for bank employees to sell insurance partners' products. Group policies first (personal accident, health without pre-medical checks; the SHG-linked hospital-cash product is deferred), retail policies and mobile later. Deployed on the bank's on-prem or private-cloud infrastructure.
 
 **Status:** pre-build scaffold. Technology stack not yet chosen (see `docs/adr/0001-technology-stack.md`).
 
