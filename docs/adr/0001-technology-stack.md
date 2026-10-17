@@ -7,7 +7,7 @@
 ## Context
 - Web app for bank employees; mobile later, so the backend should be API-first.
 - Deployed on the bank's on-prem servers or private cloud; no remote access for the startup; installs and upgrades are done by the bank from signed bundles.
-- Modest scale (~50k policies per company; see Q2), 8 insurer integrations, single group product first.
+- Modest scale assumed (sizing target deferred, D-014/Q2), 8 insurer integrations, single group product first.
 - Bank infosec review will assess the stack (dependencies, patching, hardening).
 - Unknowns: bank's approved OS/database/container platform and middleware (Q8), SSO and core-banking integration (Q9).
 
