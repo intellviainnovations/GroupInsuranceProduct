@@ -19,5 +19,8 @@ Bancassurance web application for bank employees to sell insurance partners' pro
 
 Project background, decisions and open questions: `intellviainnovations/GroupInsuranceProduct-Project-Knowledge`.
 
+## Licence
+Proprietary. © 2026 Intellvia Innovations LLP. All rights reserved. See `LICENSE`.
+
 ## Not in this repo
 Secrets, real customer or member data, bank-confidential documents, signing keys.
