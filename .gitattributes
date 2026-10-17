@@ -1,0 +1,10 @@
+# Keep internal material out of `git archive` exports.
+.claude/        export-ignore
+.github/        export-ignore
+docs/adr/       export-ignore
+docs/agents/    export-ignore
+docs/contracts/ export-ignore
+docs/specs/     export-ignore
+docs/templates/ export-ignore
+scripts/        export-ignore
+CLAUDE.md       export-ignore

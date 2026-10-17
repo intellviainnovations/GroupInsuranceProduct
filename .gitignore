@@ -1,0 +1,19 @@
+# Secrets and key material – never commit
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local tooling
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Build output (extend when the stack is chosen)
+dist/
+build/

@@ -1,0 +1,7 @@
+# Paths allowed into a release bundle. Anything not listed is excluded.
+# One path prefix per line. Lines starting with # are comments.
+# Add entries only when the corresponding directory exists and is meant for the bank.
+src/
+migrations/
+config-templates/
+docs/bank/
