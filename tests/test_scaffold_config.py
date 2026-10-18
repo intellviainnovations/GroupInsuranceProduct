@@ -12,7 +12,7 @@ from backend.api.app import create_app
 from backend.platform.config import ConfigError, load_settings
 from scaffold_support import logging_guard
 
-SECRET = "DISTINCTIVE-secret-5531"
+SECRET = "DISTINCTIVE-secret-5531"  # secret-scan:allow
 
 
 @pytest.fixture(autouse=True)
@@ -57,7 +57,7 @@ def test_a6_error_does_not_contain_secret_supplied_in_another_variable() -> None
 def test_a6_valid_database_url_is_not_echoed_when_another_field_is_invalid() -> None:
     environ = {
         "ENV": "prod",
-        "APP_DATABASE_URL": f"postgresql://user:{SECRET}@db.invalid/app",
+        "APP_DATABASE_URL": f"postgresql://user:{SECRET}@db.invalid/app",  # secret-scan:allow
         "APP_THROTTLE_MAX_REQUESTS": "not-a-number",
         "APP_LOG_LEVEL": "LOUD",
     }
@@ -73,7 +73,7 @@ def test_a6_valid_database_url_is_not_echoed_when_another_field_is_invalid() -> 
 def test_a6_secret_in_config_file_is_not_echoed_on_failure(tmp_path: Path) -> None:
     config = tmp_path / "settings.toml"
     config.write_text(
-        f'database_url = "postgresql://user:{SECRET}@db.invalid/app"\n'
+        f'database_url = "postgresql://user:{SECRET}@db.invalid/app"\n'  # secret-scan:allow
         'log_level = "NOT-A-LEVEL"\n'
         f'unknown_field = "{SECRET}"\n',
         encoding="utf-8",
@@ -129,6 +129,8 @@ def test_a6_production_with_database_url_loads() -> None:
 
 
 def test_a6_secret_value_is_masked_in_settings_repr() -> None:
-    settings = load_settings({"ENV": "prod", "APP_DATABASE_URL": f"postgresql://u:{SECRET}@h/d"})
+    settings = load_settings(
+        {"ENV": "prod", "APP_DATABASE_URL": f"postgresql://u:{SECRET}@h/d"}  # secret-scan:allow
+    )
     assert SECRET not in repr(settings)
     assert SECRET not in str(settings)

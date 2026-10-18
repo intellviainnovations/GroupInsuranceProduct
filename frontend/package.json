@@ -2,6 +2,9 @@
   "name": "group-insurance-frontend",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -6,5 +6,5 @@ docs/agents/    export-ignore
 docs/contracts/ export-ignore
 docs/specs/     export-ignore
 docs/templates/ export-ignore
-scripts/        export-ignore
+/scripts/       export-ignore
 CLAUDE.md       export-ignore

@@ -17,9 +17,9 @@ from scaffold_support import logging_guard, make_app
 
 BOOM = "DISTINCTIVE-boom-8842"
 D = {
-    "password": "DISTINCTIVE-pw-0001",
-    "token": "DISTINCTIVE-tok-0002",
-    "secret": "DISTINCTIVE-sec-0003",
+    "password": "DISTINCTIVE-pw-0001",  # secret-scan:allow
+    "token": "DISTINCTIVE-tok-0002",  # secret-scan:allow
+    "secret": "DISTINCTIVE-sec-0003",  # secret-scan:allow
     "authorization": "DISTINCTIVE-auth-0004",
     "nested_a": "DISTINCTIVE-nested-0005",
     "nested_b": "DISTINCTIVE-nested-0006",

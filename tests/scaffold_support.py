@@ -15,7 +15,9 @@ from pydantic import SecretStr
 from backend.api.app import create_app
 from backend.platform.config import Settings
 
-SYNTHETIC_DB_URL = "postgresql://synthetic-user:synthetic-pw@db.invalid/synthetic"
+SYNTHETIC_DB_URL = (
+    "postgresql://synthetic-user:synthetic-pw@db.invalid/synthetic"  # secret-scan:allow
+)
 
 
 def make_settings(*, dev: bool, **overrides: Any) -> Settings:

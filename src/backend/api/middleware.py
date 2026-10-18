@@ -63,7 +63,9 @@ class RequestContextMiddleware:
         set_correlation_id(correlation_id)
         path: str = scope["path"]
         started = False
-        status = 0
+        # None means no outcome is known (cancelled before any response was sent).
+        status: int | None = None
+        aborted = False
         begin = time.perf_counter()
 
         async def send_wrapper(message: Message) -> None:
@@ -86,12 +88,20 @@ class RequestContextMiddleware:
                 exc_info=(type(exc), exc, exc.__traceback__),
                 extra={"method": scope["method"], "path": path},
             )
-            if started:
-                raise
+            # Whatever status was already sent, the request failed: never log it as a success.
             status = 500
+            if started:
+                aborted = True
+                raise
             await JSONResponse(error_body(MSG_INTERNAL), status_code=500)(
                 scope, receive, send_wrapper
             )
+        except BaseException:
+            # Cancellation (e.g. client disconnect) or interpreter exit: not a success, and any
+            # status already sent says nothing about the outcome.
+            aborted = True
+            status = None
+            raise
         finally:
             logger.info(
                 "request",
@@ -99,16 +109,23 @@ class RequestContextMiddleware:
                     "method": scope["method"],
                     "path": path,
                     "status": status,
+                    "aborted": aborted,
                     "duration_ms": round((time.perf_counter() - begin) * 1000, 1),
                 },
             )
 
 
 class ThrottleMiddleware:
-    """Fixed-window request limit per client address, held in process memory.
+    """Fixed-window request limit per client key, held in process memory.
 
-    Limits are per process and keyed on the socket peer address. Behind the bank's reverse
-    proxy that address is the proxy, so the proxy/WAF remains the primary control (C-28).
+    The key is ``scope["client"][0]``, the peer address as ASGI reports it. Under uvicorn that
+    value may have been rewritten from proxy headers by uvicorn (its proxy-header handling applies
+    to peers listed in ``--forwarded-allow-ips``) and is the proxy's address when it has not, so
+    the proxy/WAF remains the primary control (C-28). Limits are per process.
+
+    The key table is bounded: at most ``max_tracked`` keys are held. Entries are kept in the order
+    their window started, so expired entries sit at the front and are dropped from there (at most
+    once per window); when the table is still full, the oldest entry is evicted to admit a new key.
     """
 
     _MAX_TRACKED = 10_000
@@ -120,29 +137,48 @@ class ThrottleMiddleware:
         max_requests: int,
         window_seconds: int,
         clock: Callable[[], float] = time.monotonic,
+        max_tracked: int = _MAX_TRACKED,
     ) -> None:
+        if max_tracked < 1:
+            raise ValueError("max_tracked must be at least 1")
         self.app = app
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.clock = clock
+        self.max_tracked = max_tracked
+        # key -> (window start, count). Insertion order == window-start order (oldest first).
         self._windows: dict[str, tuple[float, int]] = {}
+        self._last_prune = clock()
 
     def _retry_after(self, key: str) -> int | None:
         """Count this request; return seconds to wait if the client is over the limit."""
         now = self.clock()
-        start, count = self._windows.get(key, (now, 0))
-        if now - start >= self.window_seconds:
+        if now - self._last_prune >= self.window_seconds:
+            self._prune(now)
+        entry = self._windows.get(key)
+        if entry is None or now - entry[0] >= self.window_seconds:
+            # New window for this key: (re)insert at the end to keep window-start order.
+            self._windows.pop(key, None)
+            while len(self._windows) >= self.max_tracked:
+                del self._windows[next(iter(self._windows))]
             start, count = now, 0
+        else:
+            start, count = entry
         count += 1
         self._windows[key] = (start, count)
-        if len(self._windows) > self._MAX_TRACKED:
-            self._prune(now)
         if count > self.max_requests:
             return max(1, int(start + self.window_seconds - now) + 1)
         return None
 
     def _prune(self, now: float) -> None:
-        self._windows = {k: v for k, v in self._windows.items() if now - v[0] < self.window_seconds}
+        """Drop expired entries from the front (oldest first); stops at the first live one."""
+        self._last_prune = now
+        windows = self._windows
+        while windows:
+            oldest = next(iter(windows))
+            if now - windows[oldest][0] < self.window_seconds:
+                break
+            del windows[oldest]
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":

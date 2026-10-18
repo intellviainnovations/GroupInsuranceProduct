@@ -2,7 +2,7 @@
 
 Bancassurance web application for bank employees to sell insurance partners' products. Group policies first (personal accident, health without pre-medical checks; the SHG-linked hospital-cash product is deferred), retail policies and mobile later. Deployed on the bank's on-prem or private-cloud infrastructure.
 
-**Status:** build-ready design. Stack accepted (`docs/adr/0001-technology-stack.md`); first product is USGIC Group Personal Accident. No application code yet.
+**Status:** build-ready design. Stack accepted (`docs/adr/0001-technology-stack.md`); first product is USGIC Group Personal Accident. A runnable scaffold exists: a FastAPI backend (app factory, typed configuration, JSON logging with redaction, security headers, request throttling, `/health` and `/ready`) and a React sign-in placeholder, both with CI. There are no business features yet: no authentication, persistence, CBS or insurer adapters, and no sale flow.
 
 ## Repository map
 | Path | Purpose |
@@ -31,7 +31,7 @@ ENV=dev uvicorn --factory backend.api.app:create_app --no-server-header --app-di
 ruff check src tests && ruff format --check src tests && mypy && pytest
 bash scripts/check_repo.sh                           # hygiene and secret scan
 ```
-Any `ENV` other than `dev` (including unset) is production mode: docs and schema endpoints are off, `APP_DATABASE_URL` is required, and startup fails with a clear message if it is missing. Always start uvicorn with `--no-server-header`. Settings come from environment variables and an optional protected TOML file (`APP_CONFIG_FILE`); see `config-templates/`. Frontend: see `frontend/README.md`.
+Any `ENV` other than `dev` (including unset) is production mode: docs and schema endpoints are off, `APP_DATABASE_URL` is required, and startup fails with a clear message if it is missing. Always start uvicorn with `--no-server-header`. Settings come from environment variables and an optional protected TOML file (`APP_CONFIG_FILE`); see `config-templates/`. Frontend (Node 22, see `frontend/.nvmrc`): see `frontend/README.md`.
 
 ## Licence
 Proprietary. © 2026 Intellvia Innovations LLP. All rights reserved. See `LICENSE`.

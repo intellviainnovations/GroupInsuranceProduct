@@ -8,6 +8,7 @@ never from code. Error messages name fields, never values.
 
 from __future__ import annotations
 
+import logging
 import os
 import stat
 import tomllib
@@ -26,6 +27,7 @@ from pydantic import (
 )
 
 CONFIG_FILE_VAR = "APP_CONFIG_FILE"
+_logger = logging.getLogger("backend.config")
 _LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 
 
@@ -71,8 +73,16 @@ def _read_config_file(path_text: str) -> dict[str, Any]:
         mode = path.stat().st_mode
     except OSError as exc:
         raise ConfigError(f"{CONFIG_FILE_VAR}: cannot read config file") from exc
-    if os.name != "nt" and mode & stat.S_IRWXO:
-        raise ConfigError(f"{CONFIG_FILE_VAR}: config file must not be accessible to other users")
+    if os.name == "nt":
+        # POSIX permission bits carry no meaning on Windows: protect the file with NTFS ACLs.
+        _logger.warning(
+            "%s: config file permission check skipped on this platform", CONFIG_FILE_VAR
+        )
+    elif mode & (stat.S_IRWXO | stat.S_IWGRP):
+        raise ConfigError(
+            f"{CONFIG_FILE_VAR}: config file must not be accessible to other users "
+            "or writable by its group"
+        )
     try:
         with path.open("rb") as handle:
             return tomllib.load(handle)
