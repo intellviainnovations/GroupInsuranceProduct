@@ -2,7 +2,7 @@
 
 - **Status:** Proposed, ready for the first build tasks. Any later change is a schema change and needs a human's approval (CLAUDE.md). Owner: architect.
 - **Scope:** Phase 1, one insurer (USGIC Group Personal Accident, D-022), one bank deployment (D-020). Rules for types, sessions, jobs and audit: `docs/adr/0002-persistence-sessions-audit.md`.
-- **Sources:** knowledge repo decisions D-022, D-023; `docs/contracts/` (the insurer, bank-auth and CBS contracts decide which columns exist).
+- **Sources:** knowledge repo decisions D-022, D-031; `docs/contracts/` (the insurer, bank-auth and CBS contracts decide which columns exist).
 - **Not here:** physical DDL. The backend builder writes Alembic migrations from this document.
 
 ## Type legend
@@ -28,14 +28,14 @@ ref_code, insurer_code_map  (lookups)
 ## 1. Reference and configuration
 | Table | Columns | Keys / constraints |
 |---|---|---|
-| `branch` | `branch_code` STR(10), `branch_name` STR(100), `region` STR(100) null, `ifsc` STR(11) null, `active` BOOL | PK `branch_code`. Maintained by an admin; the bank's branch master is not integrated in Phase 1 |
+| `branch` | `branch_code` STR(10), `branch_name` STR(100), `region` STR(100) null, `ifsc` STR(11) null, `active` BOOL | PK `branch_code`. A row is created the first time a code is seen (bank authentication reply or CBS lookup); name, region and IFSC come from the CBS `get_branch` read or an admin |
 | `insurer` | `insurer_id` UUID, `code` STR(20), `name` STR(100), `active` BOOL | PK; unique `code` |
 | `insurer_product` | `product_id` UUID, `insurer_id` FK, `product_code` STR(20) (the insurer's own code), `name` STR(100), `line` STR(10) (`GPA` in Phase 1), `active` BOOL | PK; unique (`insurer_id`, `product_code`) |
 | `insurer_plan` | `plan_id` UUID, `product_id` FK, `plan_code` STR(10) (`A`, `B`, `C` for USGIC), `name` STR(100), `active` BOOL | PK; unique (`product_id`, `plan_code`) |
 | `plan_rate` | `rate_id` UUID, `plan_id` FK, `effective_from` DATE, `effective_to` DATE null, `sum_insured` NUM, `net_premium` NUM, `gst_amount` NUM, `gross_premium` NUM, `policy_term_days` INT, `maintained_by` FK `app_user`, `approved_by` FK `app_user`, `note` STR(300) null | PK; CHECK `gross_premium = net_premium + gst_amount`; no overlapping periods per plan (application rule). **Human-maintained from the insurer's documents; we never calculate premium (Q30).** The insurer's returned premium is stored on the enrolment and compared to this row |
 | `ref_code` | `category` STR(30), `code` STR(30), `label` STR(100), `sort_order` INT, `active` BOOL | PK (`category`, `code`). Categories: `GENDER`, `RELATION`, `OCCUPATION`, `STATE`, `CONSENT_METHOD`, `CANCEL_REASON` (`BRANCH` exists only in `insurer_code_map`, mapping the bank's branch code to the insurer's) |
 | `insurer_code_map` | `insurer_id` FK, `category` STR(30), `our_code` STR(30), `insurer_value` STR(100) | PK (`insurer_id`, `category`, `our_code`). Turns our codes into the insurer's exact spelling (for example `Male` versus `MALE`) |
-| `pool_account` | `pool_account_id` UUID, `insurer_id` FK, `product_id` FK null, `account_no` STR(30), `label` STR(100), `active_from` DATE, `active_to` DATE null | PK. The bank's collection account that is credited with each premium (D-023). Exactly one active per insurer product at a time |
+| `pool_account` | `pool_account_id` UUID, `insurer_id` FK, `product_id` FK null, `account_no` STR(30), `label` STR(100), `active_from` DATE, `active_to` DATE null | PK. The bank's collection account that is credited with each premium (D-031). Exactly one active per insurer product at a time |
 | `app_role` | `role_id` UUID, `code` STR(30), `name` STR(100) | PK; unique `code`. Proposed roles: `BRANCH_USER` (maker), `CHECKER`, `OPERATIONS` (retries, reconciliation), `REPORT_VIEWER`, `ADMIN`, `AUDITOR` (read-only). Names to confirm (Q32) |
 | `app_setting` | `setting_key` STR(80), `setting_value` STR(500), `updated_by` FK null | PK `setting_key`. For example whether maker-checker is on per action |
 
@@ -48,12 +48,12 @@ ref_code, insurer_code_map  (lookups)
 | `login_throttle` | `throttle_key` STR(100) (roll number or client address), `fail_count` INT, `window_start` TS, `locked_until` TS null | PK `throttle_key`. Request throttling (matrix C-28); lockout policy depends on Q29 |
 
 ## 3. Customer and sale
-Customer details are **keyed by the branch user**; the CBS is not called for customer lookup (D-023). Repeat sales can reuse a saved customer by CIF.
+Customer and account details are **read from the CBS report server** by account or CIF number, as the Finacle menu does today (D-031, `docs/contracts/cbs-customer-lookup.md`). The branch user does not key what the CBS holds; the maker completes only what it lacks (occupation, disability declaration, nominees, plan). Our tables keep a **snapshot taken for the sale**, never a mirror of the CBS.
 
 | Table | Columns | Keys / constraints |
 |---|---|---|
-| `customer` | `customer_id` UUID, `bank_customer_id` STR(20) (CIF), `first_name` STR(60), `middle_name` STR(60) null, `last_name` STR(60), `gender_code` STR(30), `date_of_birth` DATE, `mobile` STR(15), `email` STR(150) null, `address1` STR(150), `address2` STR(150) null, `city` STR(60), `state_code` STR(30), `pincode` STR(6), `occupation_code` STR(30), `other_occupation` STR(60) null, `created_by` FK `app_user` | PK; unique `bank_customer_id` |
-| `customer_account` | `customer_account_id` UUID, `customer_id` FK, `account_no_enc` BLOB, `account_no_hash` STR(64), `ifsc` STR(11) null, `branch_code` FK null, `active` BOOL | PK; unique (`customer_id`, `account_no_hash`). The debit account. Encrypted at application level, hash for exact lookup (ADR-0002) |
+| `customer` | `customer_id` UUID, `bank_customer_id` STR(20) (CIF), `first_name` STR(60), `middle_name` STR(60) null, `last_name` STR(60), `gender_code` STR(30), `date_of_birth` DATE, `mobile` STR(15), `email` STR(150) null, `address1` STR(150), `address2` STR(150) null, `city` STR(60), `state_code` STR(30), `pincode` STR(6), `occupation_code` STR(30), `other_occupation` STR(60) null, `source` STR(10) (`CBS`, `KEYED`), `cbs_fetched_at` TS null, `created_by` FK `app_user` | PK; unique `bank_customer_id`. Refreshed from the CBS at each new sale; `KEYED` only if the bank approves manual entry as a fallback (Q33). Whether the maker may edit CBS-sourced fields is open (Q33) |
+| `customer_account` | `customer_account_id` UUID, `customer_id` FK, `account_no_enc` BLOB, `account_no_hash` STR(64), `account_holder_name` STR(150) null, `account_type` STR(30) null, `account_status` STR(30) null, `joint_account` BOOL null, `ifsc` STR(11) null, `cbs_branch_code` STR(10) null (plain text, no foreign key), `cbs_fetched_at` TS null, `active` BOOL | PK; unique (`customer_id`, `account_no_hash`). The debit account, as read from the CBS and re-read just before posting. Encrypted at application level, hash for exact lookup (ADR-0002). Balance is never stored |
 | `enrolment` | see below | The central record: one insured person, one proposal, one certificate |
 | `enrolment_nominee` | `nominee_id` UUID, `enrolment_id` FK, `seq` INT, `name` STR(150), `date_of_birth` DATE null, `age` INT null, `relation_code` STR(30), `gender_code` STR(30) null, `mobile` STR(15) null, `email` STR(150) null, `present_address` STR(300) null, `permanent_address` STR(300) null, `share_percent` NUM(7,4), `bank_account_enc` BLOB null, `ifsc` STR(11) null, `bank_name` STR(100) null, `account_holder_name` STR(150) null, `appointee_name` STR(150) null, `appointee_relation_code` STR(30) null, `appointee_dob` DATE null, `appointee_age` INT null, `appointee_gender_code` STR(30) null | PK; unique (`enrolment_id`, `seq`). Shares add up to 100 (application rule and test) |
 | `enrolment_status_history` | `history_id` UUID, `enrolment_id` FK, `from_status` STR(30) null, `to_status` STR(30), `reason` STR(300) null, `actor_user_id` FK null (null = system), `correlation_id` STR(40) null, `changed_at` TS | PK; index (`enrolment_id`, `changed_at`) |
@@ -107,7 +107,8 @@ Indexes: (`branch_code`, `status`), (`created_by`, `status`), (`customer_id`), (
 ## 8. Open points that may change the model
 | Open point | Effect |
 |---|---|
-| Q27 CBS contract: one two-leg transaction or two calls, reversal and statement formats | `cbs_posting` shape and the reconciliation inputs |
+| Q27 CBS transaction contract: one two-leg transaction or two calls, reversal and statement formats | `cbs_posting` shape and the reconciliation inputs |
+| Q33 CBS report-server read access: which customer and account fields exist, KYC and status fields, whether the maker may edit CBS-sourced data | `customer` and `customer_account` columns, validation rules |
 | Q26 endorsement and cancellation behaviour, renewal call | `endorsement`, `cancellation`, `renewal_of_enrolment_id` |
 | Q28 customer consent mechanism and SMS gateway | `consent_*` columns, possibly an `otp_challenge` table |
 | Q30 plan rates and who maintains them | `plan_rate` workflow |

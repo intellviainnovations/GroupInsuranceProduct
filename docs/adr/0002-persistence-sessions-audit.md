@@ -5,7 +5,7 @@
 - **Deciders:** product owner, tech lead
 
 ## Context
-The product database holds every sale after it happens: customer and nominee data, insurer proposals and certificates, money postings, documents and the audit trail (D-023). It must be correct under partial failure (customer debited but policy not issued), auditable for the bank, and portable enough to run on the pilot bank's Oracle 19c if required (ADR-0001, Q16). Data model: `docs/design/data-model.md`.
+The product database holds every sale after it happens: customer and nominee data, insurer proposals and certificates, money postings, documents and the audit trail (D-031). It must be correct under partial failure (customer debited but policy not issued), auditable for the bank, and portable enough to run on the pilot bank's Oracle 19c if required (ADR-0001, Q16). Data model: `docs/design/data-model.md`.
 
 ## Decision
 ### 1. Portable SQL rules (Proposed)
@@ -39,6 +39,9 @@ Append-only `audit_event` table with a hash chain (each row stores the previous 
 - Database/disk encryption and role-based access for everything else, as the bank's standards require.
 - No personal data in logs, error messages or tokens.
 - Raw insurer/CBS payloads, when kept for dispute resolution, are stored encrypted with a retention period set by the bank (Q31).
+
+### 6. External read connection to the CBS report server (Proposed, Q33)
+Separate from the product database. Read-only account on an allow-list of views, parameterised queries, row limit and statement timeout, small connection pool, credentials from the secret store, access audited (`docs/contracts/cbs-customer-lookup.md`). The product database never stores a copy of the CBS; it stores the snapshot taken for each sale (`customer`, `customer_account`, `enrolment`) with the time it was read. The portable-SQL rules above apply to our database; CBS queries are written for the CBS database and live only in the CBS adapter.
 
 ## Consequences
 - More discipline in the data layer, in exchange for a cheap later port to Oracle.

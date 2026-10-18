@@ -8,7 +8,7 @@
 - Web app for bank employees; a mobile app (Android and iOS) comes later, so the backend is API-first (D-001, D-006).
 - Deployed on the bank's on-prem servers or private cloud; no remote access for the startup; the bank installs signed bundles (D-004, D-007).
 - First deliverable is a go-live product for one insurer (USGIC, Group Personal Accident), more insurers later behind one adapter interface (D-022).
-- Our application owns every sale; the bank's core banking system (CBS) is called only to debit the customer and credit the pool account (D-023).
+- Our application owns the whole sale process, moved out of the bank's CBS (Finacle) menus. Customer and account details are **read** from the CBS report-server database; the CBS **transaction path** is used only to debit the customer and credit the pool account (D-031).
 - Development happens outside the bank network, so the dev and CI database cannot be the bank's (D-008).
 - The pilot bank's own database is reported to be Oracle 19c (product owner, 2026-10-18). Other banks may differ (D-020, Q16).
 - Bank infosec reviews the stack; dependencies must be few, mainstream, pinned and patchable (clearance matrix).
@@ -32,6 +32,7 @@
 | Database | PostgreSQL (a currently supported major version) for development, CI and the first release |
 | Data access | SQLAlchemy 2.x and Alembic migrations, parameterised queries only |
 | Portability | **Proposed:** keep schema and queries in a portable SQL subset so Oracle 19c, MSSQL or MySQL can be added later (rules in ADR-0002). Not a delivery commitment |
+| CBS customer data | Read-only connection to the CBS report-server database through a `CustomerDirectory` port (`docs/contracts/cbs-customer-lookup.md`). Expected to be Oracle; driver `oracledb` in thin mode (no Oracle client install). Database type, version and access to be confirmed (Q33). The product's own database stays PostgreSQL, so the application uses two databases |
 | Outbound HTTP | `httpx` |
 | Cryptography | `cryptography` library only; no hand-written crypto |
 | Frontend | React with TypeScript, built with Vite to static files served by the reverse proxy; no Node runtime on bank hosts |
@@ -44,7 +45,7 @@
 
 ### Approved baseline dependencies
 Approved by accepting this ADR. Any other dependency needs a human's approval (CLAUDE.md).
-- Backend: `fastapi`, `uvicorn`, `pydantic`, `sqlalchemy`, `alembic`, `psycopg` (v3), `httpx`, `cryptography`; dev only: `pytest`, `ruff`, `mypy`, `pip-audit`.
+- Backend: `fastapi`, `uvicorn`, `pydantic`, `sqlalchemy`, `alembic`, `psycopg` (v3), `httpx`, `cryptography`, `oracledb` (read-only CBS access, subject to Q33); dev only: `pytest`, `ruff`, `mypy`, `pip-audit`.
 - Frontend: `react`, `react-dom`, `react-router`, `typescript`, `vite`; dev only: `vitest`, `eslint`.
 
 ### Repository layout (target)
@@ -54,10 +55,12 @@ Approved by accepting this ADR. Any other dependency needs a human's approval (C
 - Development, CI and demos need no bank access. Bank-internal APIs (auth, CBS) are exercised through fakes until the code runs in bank UAT.
 - The Oracle 19c reality at the pilot bank is a risk to manage: ADR-0002 rules (portable types, normalised empty strings, no database-specific features) keep a later port cheap, and a second-database test run must pass before any port is promised (Q16).
 - No Redis means sessions, jobs and rate limits live in the database; revisit only with measured need.
+- Two databases: our PostgreSQL (read-write) and the bank's CBS report server (read-only, bank-controlled). The CBS connection is reachable only inside the bank network, so it is exercised through a fake until the code runs in bank UAT.
 - React Native shares logic with the web app but not screens; mobile is a separate later project.
 
 ## Confirmations still needed (non-blocking)
 - Bank hosting: operating system, container platform, reverse proxy / WAF owner (Q8, Q20, Q21).
 - **Production database at the pilot bank:** will the bank install and support PostgreSQL, or must production run on its Oracle 19c? If Oracle, the portability work in ADR-0002 becomes a delivery task, not an option (Q16).
 - Python 3.12 availability on the bank's hosts.
+- **CBS report-server access:** database type and version, the read-only account, the allowed views, the network path and the bank infosec position on a direct database connection from our application (Q33).
 - Bank infosec acceptance of the open-source dependency list above.

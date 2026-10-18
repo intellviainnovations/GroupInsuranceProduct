@@ -8,7 +8,7 @@ Bancassurance web app used by bank employees to sell insurers' products (group p
 ## Status
 Build-ready. Stack is **Accepted** in `docs/adr/0001-technology-stack.md` (Python 3.12 + FastAPI, PostgreSQL, React + TypeScript, bank AD/CHRISS authentication behind an `AuthProvider` port). Only the baseline dependencies in that ADR are approved; anything else needs a human's approval.
 
-**First product:** USGIC Group Personal Accident (knowledge repo D-022). The application owns every sale; the bank's CBS is called only to debit the customer and credit the pool account (D-023).
+**First product:** USGIC Group Personal Accident (knowledge repo D-022). The application owns the whole sale process, moved out of the bank's CBS (Finacle) menus (knowledge repo D-031): customer and account details are **read** from the CBS report-server database, and the CBS **transaction path** is used only to debit the customer and credit the pool account.
 
 **Where to start a build session:** `docs/design/architecture.md` ("First build tasks"), then `docs/specs/usgic-gpa-sale-flow.md`, `docs/design/data-model.md`, and the contracts in `docs/contracts/`. The sale-flow spec is **Draft**: build the flow, states and failure handling, but never invent insurance rules (listed in the spec as needed from a domain expert).
 
