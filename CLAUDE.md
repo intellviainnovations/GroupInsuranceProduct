@@ -6,7 +6,13 @@ Bancassurance web app used by bank employees to sell insurers' products (group p
 `intellviainnovations/GroupInsuranceProduct-Project-Knowledge` (start at its `README.md`). Check its `docs/decisions.md` and `docs/open-questions.md` before proposing design changes. Do not re-open **Decided** items.
 
 ## Status
-Pre-build. Technology stack is **not chosen** – it is settled in `docs/adr/0001-technology-stack.md`. Do not add application code or dependencies until that ADR is Accepted.
+Build-ready. Stack is **Accepted** in `docs/adr/0001-technology-stack.md` (Python 3.12 + FastAPI, PostgreSQL, React + TypeScript, bank AD/CHRISS authentication behind an `AuthProvider` port). Only the baseline dependencies in that ADR are approved; anything else needs a human's approval.
+
+**First product:** USGIC Group Personal Accident (knowledge repo D-022). The application owns the whole sale process, moved out of the bank's CBS (Finacle) menus (knowledge repo D-031): customer and account details are **read** from the CBS report-server database, and the CBS **transaction path** is used only to debit the customer and credit the pool account.
+
+**Where to start a build session:** `docs/design/architecture.md` ("First build tasks"), then `docs/specs/usgic-gpa-sale-flow.md`, `docs/design/data-model.md`, and the contracts in `docs/contracts/`. The sale-flow spec is **Draft**: build the flow, states and failure handling, but never invent insurance rules (listed in the spec as needed from a domain expert).
+
+**Dev has no bank access:** develop and test against the fakes in each adapter package; real bank and insurer calls are exercised only in the bank's or insurer's UAT. Insurer and bank source documents are never stored in this repo.
 
 ## Working rules
 - Read only what the task needs. Specs: `docs/specs`. Interfaces: `docs/contracts`. Decisions: `docs/adr`.
@@ -23,5 +29,5 @@ Deliverables are signed bundles built from `release/allowlist.txt`. UAT/producti
 
 ## Agents
 - Main-session playbook: `docs/agents/orchestrator.md` (subagents cannot spawn subagents, so the orchestrator runs as the main session).
-- Subagents: `.claude/agents/` (architect, qa, backend, reviewer). More are added as the build starts (adapter, frontend, release).
+- Subagents: `.claude/agents/` (architect, qa, backend, frontend, reviewer). A release agent is added when bundling starts.
 - Bank security clearance: follow `docs/security/clearance-matrix.md` (owner: reviewer). Controls need evidence; the bank's original checklist workbook is not stored in this repo.
