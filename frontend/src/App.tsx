@@ -4,6 +4,8 @@ import type { Role } from "./api/types";
 import { useAuth } from "./auth/AuthContext";
 import { AppLayout } from "./layout/AppLayout";
 import { Dashboard } from "./pages/Dashboard";
+import { EnrolmentDetail } from "./pages/EnrolmentDetail";
+import { EnrolmentList } from "./pages/EnrolmentList";
 import { NoAccess, NotFound } from "./pages/NotFound";
 import { SignIn } from "./pages/SignIn";
 import { Spinner } from "./ui/components";
@@ -23,6 +25,8 @@ function RequireRole({ roles, children }: { roles: Role[] | "any"; children: Rea
   return <>{children}</>;
 }
 
+const VIEWERS: Role[] = ["BRANCH_USER", "CHECKER", "OPERATIONS", "AUDITOR"];
+
 export function App() {
   const { sessionKey, checking } = useAuth();
   if (checking) return <Spinner />;
@@ -39,6 +43,8 @@ export function App() {
       >
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<RequireRole roles="any"><Dashboard /></RequireRole>} />
+        <Route path="/enrolments" element={<RequireRole roles={VIEWERS}><EnrolmentList /></RequireRole>} />
+        <Route path="/enrolments/:id" element={<RequireRole roles={VIEWERS}><EnrolmentDetail /></RequireRole>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

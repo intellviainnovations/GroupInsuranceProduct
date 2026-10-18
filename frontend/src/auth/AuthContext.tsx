@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from "react";
 import { ApiError, setCsrfToken, setUnauthenticatedHandler } from "../api/client";
 import { api } from "../api/endpoints";
+import { clearReferenceCache } from "../api/reference";
 import type { LoginRequest, LoginResult, Me, Role } from "../api/types";
 
 type SignOutReason = "signed_out" | "expired" | null;
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setMe = useCallback((m: Me | null) => {
     signedIn.current = m !== null;
+    clearReferenceCache();
     setCsrfToken(m?.csrf_token ?? null);
     setMeState(m);
     setSessionKey((k) => k + 1);
