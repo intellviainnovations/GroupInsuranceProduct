@@ -8,3 +8,19 @@ database_url = "<set-in-protected-copy>"  # PostgreSQL URL incl. credentials; re
 throttle_enabled = true
 throttle_max_requests = 120              # requests per client address per window, per process
 throttle_window_seconds = 60
+
+# Sessions and CSRF (docs/contracts/staff-api.md)
+session_secret = "<set-in-protected-copy>"   # >= 32 characters; random per start if unset in dev/demo
+allowed_origins = "<https://staff-app.bank.example>"  # comma list; Origin check on unsafe methods
+session_idle_minutes = 15                    # placeholder until the bank's policy (Q29)
+session_absolute_minutes = 480
+
+# USGIC UAT adapter (docs/contracts/usgic-gpa.md); used when insurer_adapter = "usgic"
+usgic_base_url = "<set-in-protected-copy>"
+usgic_user_name = "<set-in-protected-copy>"
+usgic_product_code = "<set-in-protected-copy>"
+usgic_intermediary_code = "<set-in-protected-copy>"
+usgic_intermediary_branch_code = "<set-in-protected-copy>"
+usgic_cipher = "unconfigured"                # fails closed until Q26 gives the algorithm
+usgic_connect_timeout_seconds = 5
+usgic_read_timeout_seconds = 30

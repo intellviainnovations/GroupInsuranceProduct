@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "note": "SYNTHETIC DATA ONLY. Every name, number, code and rate is invented. Not for production bundles.",
+  "bank_auth": {
+    "fake_password": "Synthetic#Demo2026", "note": "secret-scan:allow shared synthetic demo credential, accepted only by the fake bank-auth provider",
+    "otp_user": "D9001",
+    "valid_otp": "123456",
+    "locked_user": "D9002",
+    "unavailable_user": "D9003",
+    "users": [
+      {"roll_no": "D1001", "branch_code": "0101", "display_name": "Maker One (synthetic)", "email": "d1001@bank.invalid", "designation": "Officer"},
+      {"roll_no": "D1002", "branch_code": "0101", "display_name": "Checker One (synthetic)", "email": "d1002@bank.invalid", "designation": "Senior Officer"},
+      {"roll_no": "D1003", "branch_code": "0102", "display_name": "Maker Checker East (synthetic)", "email": "d1003@bank.invalid", "designation": "Branch Manager"},
+      {"roll_no": "D1004", "branch_code": "0900", "display_name": "Operations One (synthetic)", "email": "d1004@bank.invalid", "designation": "Manager"},
+      {"roll_no": "D1005", "branch_code": "0900", "display_name": "Auditor One (synthetic)", "email": "d1005@bank.invalid", "designation": "Chief Manager"},
+      {"roll_no": "D1006", "branch_code": "0900", "display_name": "Admin One (synthetic)", "email": "d1006@bank.invalid", "designation": "Manager"},
+      {"roll_no": "D1007", "branch_code": "0102", "display_name": "No Role (synthetic)", "email": "d1007@bank.invalid", "designation": "Clerk"},
+      {"roll_no": "D1008", "branch_code": "0900", "display_name": "Operations Two (synthetic)", "email": "d1008@bank.invalid", "designation": "Manager"},
+      {"roll_no": "D1009", "branch_code": "0102", "display_name": "Maker East (synthetic)", "email": "d1009@bank.invalid", "designation": "Officer"},
+      {"roll_no": "D9001", "branch_code": "0101", "display_name": "OTP User (synthetic)", "email": "d9001@bank.invalid", "designation": "Officer"}
+    ]
+  },
+  "cbs_world": {
+    "branches": [
+      {"code": "0101", "name": "Synthetic Main", "ifsc": "SYNB0000101"},
+      {"code": "0102", "name": "Synthetic East", "ifsc": "SYNB0000102"},
+      {"code": "0900", "name": "Synthetic Head Office", "ifsc": "SYNB0000900"}
+    ],
+    "unavailable_ids": ["509999999901", "SYN9901"],
+    "slow_ids": ["509999999902", "SYN9902"],
+    "frozen_on_reread_suffix": "7004",
+    "customers": [
+      {"cif": "SYN0001", "first_name": "Asha", "last_name": "Demo", "gender_code": "F", "date_of_birth": "1985-04-12", "mobile": "9000000001", "email": "asha.demo@example.invalid", "address1": "1 Synthetic Street", "address2": "Block A", "city": "Demo City", "state_code": "TN", "pincode": "600001", "occupation_code": "SALARIED", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0101",
+       "accounts": [{"account_no": "509900011001", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0101", "joint_account": false, "holder_name": "ASHA DEMO"}]},
+      {"cif": "SYN0002", "first_name": "Ravi", "last_name": "Sample", "gender_code": "M", "date_of_birth": "1979-11-03", "mobile": "9000000002", "email": "ravi.sample@example.invalid", "address1": "22 Fixture Road", "city": "Demo City", "state_code": "TN", "pincode": "600002", "occupation_code": "SELF_EMPLOYED", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0101",
+       "accounts": [
+         {"account_no": "509900021002", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0101", "joint_account": false, "holder_name": "RAVI SAMPLE"},
+         {"account_no": "509900021003", "status": "ACTIVE", "account_type": "CURRENT", "branch_code": "0101", "joint_account": false, "holder_name": "RAVI SAMPLE"},
+         {"account_no": "509900021004", "status": "DORMANT", "account_type": "SAVINGS", "branch_code": "0101", "joint_account": false, "holder_name": "RAVI SAMPLE"}
+       ]},
+      {"cif": "SYN0003", "first_name": "Meena", "last_name": "Test", "gender_code": "F", "date_of_birth": "1990-01-20", "mobile": "9000000003", "email": "meena.test@example.invalid", "address1": "3 Placeholder Lane", "city": "East Town", "state_code": "KA", "pincode": "560003", "occupation_code": "HOMEMAKER", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0102",
+       "accounts": [{"account_no": "509900031005", "status": "CLOSED", "account_type": "SAVINGS", "branch_code": "0102", "joint_account": false, "holder_name": "MEENA TEST"}]},
+      {"cif": "SYN0004", "first_name": "Kiran", "last_name": "Example", "gender_code": "M", "date_of_birth": "1988-07-07", "mobile": "9000000004", "email": "kiran.example@example.invalid", "address1": "4 Mock Avenue", "city": "Demo City", "state_code": "TN", "pincode": "600004", "occupation_code": "SALARIED", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0101",
+       "accounts": [{"account_no": "509900047001", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0101", "joint_account": false, "holder_name": "KIRAN EXAMPLE"}]},
+      {"cif": "SYN0005", "first_name": "Farah", "last_name": "Placeholder", "gender_code": "F", "date_of_birth": "1992-02-14", "mobile": "9000000005", "email": "farah.placeholder@example.invalid", "address1": "5 Sample Street", "city": "Demo City", "state_code": "TN", "pincode": "600005", "occupation_code": "SALARIED", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0101",
+       "accounts": [{"account_no": "509900057002", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0101", "joint_account": false, "holder_name": "FARAH PLACEHOLDER"}]},
+      {"cif": "SYN0006", "first_name": "Arjun", "last_name": "Mock", "gender_code": "M", "date_of_birth": "1983-09-30", "mobile": "9000000006", "email": "arjun.mock@example.invalid", "address1": "6 Fixture Road", "city": "Demo City", "state_code": "TN", "pincode": "600006", "occupation_code": "RETIRED", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0101",
+       "accounts": [{"account_no": "509900067003", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0101", "joint_account": false, "holder_name": "ARJUN MOCK"}]},
+      {"cif": "SYN0007", "first_name": "Leela", "last_name": "Fixture", "gender_code": "F", "date_of_birth": "1995-12-01", "mobile": "9000000007", "email": "leela.fixture@example.invalid", "address1": "7 Demo Nagar", "city": "East Town", "state_code": "KA", "pincode": "560007", "occupation_code": "STUDENT", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0102",
+       "accounts": [
+         {"account_no": "509900076001", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0102", "joint_account": false, "holder_name": "LEELA FIXTURE"},
+         {"account_no": "509900077004", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0102", "joint_account": false, "holder_name": "LEELA FIXTURE"}
+       ]},
+      {"cif": "SYN0008", "first_name": "Vikram", "last_name": "Synthetic", "gender_code": "M", "date_of_birth": "1975-05-25", "mobile": "9000000008", "email": "vikram.synthetic@example.invalid", "address1": "8 Placeholder Lane", "city": "East Town", "state_code": "KA", "pincode": "560008", "occupation_code": "SELF_EMPLOYED", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0102",
+       "accounts": [
+         {"account_no": "509900086003", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0102", "joint_account": false, "holder_name": "VIKRAM SYNTHETIC"},
+         {"account_no": "509900086005", "status": "ACTIVE", "account_type": "CURRENT", "branch_code": "0102", "joint_account": false, "holder_name": "VIKRAM SYNTHETIC"}
+       ]},
+      {"cif": "SYN0009", "first_name": "Nisha", "last_name": "Sampleton", "gender_code": "F", "date_of_birth": "1998-03-18", "mobile": "9000000009", "address1": "9 Mock Avenue", "city": "East Town", "state_code": "KA", "pincode": "560009", "kyc_status": "COMPLETE", "customer_status": "ACTIVE", "home_branch_code": "0102",
+       "accounts": [{"account_no": "509900096002", "status": "ACTIVE", "account_type": "SAVINGS", "branch_code": "0102", "joint_account": false, "holder_name": "NISHA SAMPLETON"}]}
+    ]
+  },
+  "fake_insurer": {
+    "note": "The fake insurer's own synthetic premium figures. Not insurer rates.",
+    "premium_by_plan": {
+      "A": {"net": "100.00", "gst": "18.00", "gross": "118.00"},
+      "B": {"net": "180.00", "gst": "32.40", "gross": "212.40"},
+      "C": {"net": "400.00", "gst": "72.00", "gross": "472.00"}
+    },
+    "mismatch_premium_by_plan": {
+      "A": {"net": "110.00", "gst": "19.80", "gross": "129.80"},
+      "B": {"net": "190.00", "gst": "34.20", "gross": "224.20"},
+      "C": {"net": "420.00", "gst": "75.60", "gross": "495.60"}
+    },
+    "term_days_by_plan": {"A": 365, "B": 365, "C": 365}
+  },
+  "app": {
+    "insurer_code": "USGIC",
+    "product_code": "GPA",
+    "branches": [
+      {"code": "0101", "name": "Synthetic Main"},
+      {"code": "0102", "name": "Synthetic East"},
+      {"code": "0900", "name": "Synthetic Head Office"}
+    ],
+    "users": [
+      {"roll_no": "D1001", "branch_code": "0101", "display_name": "Maker One (synthetic)", "designation": "Officer", "roles": ["BRANCH_USER"]},
+      {"roll_no": "D1002", "branch_code": "0101", "display_name": "Checker One (synthetic)", "designation": "Senior Officer", "roles": ["CHECKER"]},
+      {"roll_no": "D1003", "branch_code": "0102", "display_name": "Maker Checker East (synthetic)", "designation": "Branch Manager", "roles": ["BRANCH_USER", "CHECKER"]},
+      {"roll_no": "D1004", "branch_code": "0900", "display_name": "Operations One (synthetic)", "designation": "Manager", "roles": ["OPERATIONS"]},
+      {"roll_no": "D1005", "branch_code": "0900", "display_name": "Auditor One (synthetic)", "designation": "Chief Manager", "roles": ["AUDITOR", "REPORT_VIEWER"]},
+      {"roll_no": "D1006", "branch_code": "0900", "display_name": "Admin One (synthetic)", "designation": "Manager", "roles": ["ADMIN"]},
+      {"roll_no": "D1007", "branch_code": "0102", "display_name": "No Role (synthetic)", "designation": "Clerk", "roles": []},
+      {"roll_no": "D1008", "branch_code": "0900", "display_name": "Operations Two (synthetic)", "designation": "Manager", "roles": ["OPERATIONS"]},
+      {"roll_no": "D1009", "branch_code": "0102", "display_name": "Maker East (synthetic)", "designation": "Officer", "roles": ["BRANCH_USER"]},
+      {"roll_no": "D9001", "branch_code": "0101", "display_name": "OTP User (synthetic)", "designation": "Officer", "roles": ["BRANCH_USER"]}
+    ],
+    "plans": [
+      {"plan_code": "A", "name": "GPA Plan A (synthetic)", "rate": {"sum_insured": "100000.00", "net": "100.00", "gst": "18.00", "gross": "118.00", "term_days": 365, "effective_from": "2026-01-01", "note": "SYNTHETIC - NOT AN INSURER RATE"}},
+      {"plan_code": "B", "name": "GPA Plan B (synthetic)", "rate": {"sum_insured": "200000.00", "net": "180.00", "gst": "32.40", "gross": "212.40", "term_days": 365, "effective_from": "2026-01-01", "note": "SYNTHETIC - NOT AN INSURER RATE"}},
+      {"plan_code": "C", "name": "GPA Plan C (synthetic)", "rate": {"sum_insured": "500000.00", "net": "400.00", "gst": "72.00", "gross": "472.00", "term_days": 365, "effective_from": "2026-01-01", "note": "SYNTHETIC - NOT AN INSURER RATE"}}
+    ],
+    "ref_codes": {
+      "GENDER": [["M", "Male"], ["F", "Female"], ["T", "Transgender"]],
+      "RELATION": [["SPOUSE", "Spouse"], ["SON", "Son"], ["DAUGHTER", "Daughter"], ["FATHER", "Father"], ["MOTHER", "Mother"], ["BROTHER", "Brother"], ["SISTER", "Sister"], ["OTHER", "Other"]],
+      "OCCUPATION": [["SALARIED", "Salaried"], ["SELF_EMPLOYED", "Self-employed"], ["HOMEMAKER", "Homemaker"], ["STUDENT", "Student"], ["RETIRED", "Retired"], ["OTHER", "Other"]],
+      "STATE": [["TN", "Tamil Nadu"], ["KA", "Karnataka"], ["MH", "Maharashtra"], ["DL", "Delhi"]],
+      "CONSENT_METHOD": [["SIGNED_FORM", "Signed consent form (placeholder, Q28)"], ["BRANCH_DECLARATION", "Branch declaration (placeholder, Q28)"]],
+      "CANCEL_REASON": [["CUSTOMER_REQUEST", "Customer request"], ["DUPLICATE_SALE", "Duplicate sale"], ["DATA_ERROR", "Data entry error"]]
+    },
+    "code_map": {
+      "GENDER": {"M": "Male", "F": "Female", "T": "Transgender"},
+      "RELATION": {"SPOUSE": "Spouse", "SON": "Son", "DAUGHTER": "Daughter", "FATHER": "Father", "MOTHER": "Mother", "BROTHER": "Brother", "SISTER": "Sister", "OTHER": "Other"},
+      "OCCUPATION": {"SALARIED": "Salaried", "SELF_EMPLOYED": "Self Employed", "HOMEMAKER": "Housewife", "STUDENT": "Student", "RETIRED": "Retired", "OTHER": "Others"},
+      "STATE": {"TN": "TAMIL NADU", "KA": "KARNATAKA", "MH": "MAHARASHTRA", "DL": "DELHI"},
+      "BRANCH": {"0101": "900101", "0102": "900102", "0900": "900900"}
+    },
+    "settings": {"maker_checker.enrolment": "true", "maker_checker.cancellation": "true"},
+    "pool_account": {"account_no": "509900000001", "label": "USGIC GPA premium pool (synthetic)", "active_from": "2026-01-01"},
+    "nominee_templates": {
+      "spouse": [{"name": "Synthetic Spouse", "relation_code": "SPOUSE", "share_percent": "100", "age": 38}],
+      "two": [{"name": "Synthetic Child One", "relation_code": "SON", "share_percent": "50", "age": 19}, {"name": "Synthetic Child Two", "relation_code": "DAUGHTER", "share_percent": "50", "age": 21}],
+      "none": []
+    },
+    "enrolments": [
+      {"status": "DRAFT", "branch": "0101", "maker": "D1001", "account": "509900011001", "plan": "A", "days_ago": 1, "nominees": "spouse", "note": "complete draft"},
+      {"status": "DRAFT", "branch": "0101", "maker": "D1001", "account": "509900021002", "plan": "B", "days_ago": 0, "nominees": "none", "note": "missing nominees"},
+      {"status": "DRAFT", "branch": "0102", "maker": "D1003", "account": "509900096002", "plan": "A", "days_ago": 2, "nominees": "spouse", "note": "by D1003; occupation and e-mail not in CBS"},
+      {"status": "PENDING_CHECK", "branch": "0101", "maker": "D1001", "account": "509900011001", "plan": "B", "days_ago": 1, "nominees": "spouse"},
+      {"status": "PENDING_CHECK", "branch": "0101", "maker": "D1001", "account": "509900021003", "plan": "A", "days_ago": 2, "nominees": "two"},
+      {"status": "PENDING_CHECK", "branch": "0102", "maker": "D1003", "account": "509900076001", "plan": "C", "days_ago": 1, "nominees": "spouse", "note": "D1003 cannot approve own sale"},
+      {"status": "REJECTED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900021002", "plan": "C", "days_ago": 6, "nominees": "spouse", "checker_comment": "Synthetic: nominee name to be confirmed with the customer"},
+      {"status": "APPROVED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900011001", "plan": "A", "days_ago": 3, "nominees": "spouse"},
+      {"status": "APPROVED", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900076001", "plan": "B", "days_ago": 2, "nominees": "two"},
+      {"status": "PROPOSAL_CREATED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900021003", "plan": "A", "days_ago": 4, "nominees": "spouse"},
+      {"status": "PROPOSAL_CREATED", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900086003", "plan": "B", "days_ago": 3, "nominees": "spouse", "mismatch": true},
+      {"status": "PAYMENT_PENDING", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900076001", "plan": "A", "days_ago": 1, "nominees": "spouse"},
+      {"status": "PAYMENT_FAILED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900047001", "plan": "A", "days_ago": 5, "nominees": "spouse", "posting_reason": "Synthetic decline: insufficient funds"},
+      {"status": "PAID", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900021002", "plan": "C", "days_ago": 0, "nominees": "two", "retry_job_minutes": 2},
+      {"status": "ISSUED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900011001", "plan": "A", "days_ago": 0, "nominees": "spouse"},
+      {"status": "ISSUED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900021002", "plan": "B", "days_ago": 3, "nominees": "two"},
+      {"status": "ISSUED", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900076001", "plan": "C", "days_ago": 6, "nominees": "spouse"},
+      {"status": "ISSUED", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900096002", "plan": "A", "days_ago": 11, "nominees": "spouse"},
+      {"status": "ISSUED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900021003", "plan": "B", "days_ago": 17, "nominees": "spouse"},
+      {"status": "ISSUED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900011001", "plan": "C", "days_ago": 28, "nominees": "two"},
+      {"status": "PROPOSAL_REJECTED", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900076001", "plan": "A", "days_ago": 7, "nominees": "spouse", "insurer_message": "Synthetic insurer rejection: nominee details do not pass validation"},
+      {"status": "PROPOSAL_CANCELLED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900011001", "plan": "B", "days_ago": 10, "nominees": "spouse"},
+      {"status": "NEEDS_ATTENTION", "reason": "POSTING_UNKNOWN", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900067003", "plan": "A", "days_ago": 2, "nominees": "spouse"},
+      {"status": "NEEDS_ATTENTION", "reason": "ISSUE_RETRIES_EXHAUSTED", "branch": "0102", "maker": "D1009", "checker": "D1003", "account": "509900086005", "plan": "B", "days_ago": 3, "nominees": "spouse"},
+      {"status": "ISSUED", "pending_cancellation": true, "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900021002", "plan": "A", "days_ago": 20, "nominees": "spouse", "cancel_reason": "CUSTOMER_REQUEST", "note": "cancellation awaiting the checker (stays ISSUED until approved)"},
+      {"status": "CANCELLED", "branch": "0101", "maker": "D1001", "checker": "D1002", "account": "509900011001", "plan": "B", "days_ago": 25, "nominees": "spouse", "cancel_reason": "DUPLICATE_SALE"}
+    ]
+  }
+}

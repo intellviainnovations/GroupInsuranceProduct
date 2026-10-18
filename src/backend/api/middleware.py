@@ -15,7 +15,7 @@ from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from backend.platform.errors import MSG_INTERNAL, MSG_TOO_MANY_REQUESTS, error_body
+from backend.platform.errors import MSG_INTERNAL, MSG_TOO_MANY_REQUESTS, error_body, is_api_path
 from backend.platform.request_context import (
     CORRELATION_HEADER,
     accept_or_generate,
@@ -93,7 +93,8 @@ class RequestContextMiddleware:
             if started:
                 aborted = True
                 raise
-            await JSONResponse(error_body(MSG_INTERNAL), status_code=500)(
+            code = "INTERNAL" if is_api_path(path) else None
+            await JSONResponse(error_body(MSG_INTERNAL, code), status_code=500)(
                 scope, receive, send_wrapper
             )
         except BaseException:
@@ -189,8 +190,9 @@ class ThrottleMiddleware:
         if retry_after is None:
             await self.app(scope, receive, send)
             return
+        code = "RATE_LIMITED" if is_api_path(scope["path"]) else None
         response = JSONResponse(
-            error_body(MSG_TOO_MANY_REQUESTS),
+            error_body(MSG_TOO_MANY_REQUESTS, code),
             status_code=429,
             headers={"Retry-After": str(retry_after)},
         )

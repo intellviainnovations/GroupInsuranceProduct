@@ -14,7 +14,7 @@ import stat
 import tomllib
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -35,21 +35,102 @@ class ConfigError(Exception):
     """Startup configuration is missing or invalid. The message never contains secret values."""
 
 
+# Run modes that may use synthetic data (memory backend, fake adapters). Decided 2026-10-18.
+SYNTHETIC_ENVS = frozenset({"dev", "demo"})
+
+
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    # Run mode. Anything other than "dev" is production, so a missing value is safe.
+    # Run mode. Anything other than "dev" is production, so a missing value is safe. "demo" keeps
+    # every production hardening but may run on synthetic data.
     env: str = "prod"
     log_level: str = "INFO"
-    # Application database (PostgreSQL). Required outside dev; unused until persistence lands.
+    # Application database (PostgreSQL). Required outside dev when the SQL backend is used.
     database_url: SecretStr | None = None
     throttle_enabled: bool = True
     throttle_max_requests: int = Field(default=120, gt=0)
     throttle_window_seconds: int = Field(default=60, gt=0)
 
+    # Backend and adapter switches (docs/design/repositories.md section 4). None means "not set":
+    # dev/demo then use memory and the fakes; any other ENV uses sql and unconfigured adapters,
+    # which fail closed. An explicit memory or fake outside dev/demo is refused.
+    data_backend: Literal["memory", "sql"] | None = None
+    insurer_adapter: Literal["fake", "usgic"] | None = None
+    bank_auth: Literal["fake", "esb"] | None = None
+    cbs: Literal["fake"] | None = None
+
+    # Sessions and CSRF (docs/contracts/staff-api.md).
+    session_secret: SecretStr | None = None
+    allowed_origins: str = ""
+    session_cookie_secure: bool = True
+    session_idle_minutes: int = Field(default=15, gt=0)  # placeholder until Q29
+    session_absolute_minutes: int = Field(default=480, gt=0)  # placeholder until Q29
+    login_max_failures: int = Field(default=5, gt=0)  # placeholder until Q29
+    login_lock_minutes: int = Field(default=15, gt=0)
+    otp_challenge_minutes: int = Field(default=5, gt=0)
+
+    # Business plumbing (not insurance rules).
+    selectable_account_statuses: str = "ACTIVE"  # Assumption, Q33
+    issue_retry_limit: int = Field(default=3, gt=0)
+    retry_delay_seconds: int = Field(default=60, ge=0)
+    job_worker_enabled: bool = True
+    job_poll_seconds: float = Field(default=2.0, gt=0)
+    fake_delay_ms: int = Field(default=300, ge=0)
+    cbs_timeout_seconds: float = Field(default=5.0, gt=0)
+
+    # USGIC UAT adapter (docs/contracts/usgic-gpa.md). Values only from protected config.
+    usgic_base_url: str | None = None
+    usgic_user_name: str | None = None
+    usgic_password: SecretStr | None = None
+    usgic_product_code: str | None = None
+    usgic_intermediary_code: str | None = None
+    usgic_intermediary_branch_code: str | None = None
+    usgic_cipher: Literal["unconfigured"] = "unconfigured"
+    usgic_cipher_key: SecretStr | None = None
+    usgic_cipher_iv: SecretStr | None = None
+    usgic_token_header: str = "TokenId"  # noqa: S105 - a header name, not a secret
+    usgic_token_refresh_margin_seconds: int = Field(default=300, ge=0)
+    usgic_token_default_ttl_seconds: int = Field(default=3000, gt=0)
+    usgic_connect_timeout_seconds: float = Field(default=5.0, gt=0)
+    usgic_read_timeout_seconds: float = Field(default=30.0, gt=0)
+
     @property
     def production(self) -> bool:
         return self.env != "dev"
+
+    @property
+    def synthetic_allowed(self) -> bool:
+        return self.env in SYNTHETIC_ENVS
+
+    @property
+    def resolved_data_backend(self) -> str:
+        if self.data_backend is not None:
+            return self.data_backend
+        return "memory" if self.synthetic_allowed else "sql"
+
+    def resolved_adapter(self, name: Literal["insurer_adapter", "bank_auth", "cbs"]) -> str:
+        value: str | None = getattr(self, name)
+        if value is not None:
+            return value
+        return "fake" if self.synthetic_allowed else "unconfigured"
+
+    @property
+    def synthetic_data(self) -> bool:
+        """True when the memory backend or any fake adapter is active (demo banner)."""
+        return self.resolved_data_backend == "memory" or any(
+            self.resolved_adapter(n) == "fake" for n in ("insurer_adapter", "bank_auth", "cbs")
+        )
+
+    @property
+    def allowed_origin_set(self) -> frozenset[str]:
+        return frozenset(o.strip() for o in self.allowed_origins.split(",") if o.strip())
+
+    @property
+    def selectable_status_set(self) -> frozenset[str]:
+        return frozenset(
+            s.strip().upper() for s in self.selectable_account_statuses.split(",") if s.strip()
+        )
 
     @field_validator("log_level")
     @classmethod
@@ -61,9 +142,25 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def _check_required(self) -> Self:
+        if not self.synthetic_allowed:
+            if self.data_backend == "memory":
+                raise ValueError("data_backend 'memory' is allowed only when ENV is dev or demo")
+            for name in ("insurer_adapter", "bank_auth", "cbs"):
+                if getattr(self, name) == "fake":
+                    raise ValueError(f"{name} 'fake' is allowed only when ENV is dev or demo")
         missing = self.database_url is None or not self.database_url.get_secret_value()
-        if self.production and missing:
+        if self.production and self.resolved_data_backend == "sql" and missing:
             raise ValueError("database_url is required when ENV is not 'dev'")
+        if self.session_secret is not None and len(self.session_secret.get_secret_value()) < 32:
+            raise ValueError("session_secret must be at least 32 characters")
+        if not self.session_cookie_secure and self.env != "dev":
+            raise ValueError("session_cookie_secure may be false only when ENV is 'dev'")
+        if self.bank_auth == "esb":
+            raise ValueError("bank_auth 'esb' is not available yet (waiting for keys, Q29)")
+        if self.insurer_adapter == "usgic":
+            for name in ("usgic_base_url", "usgic_user_name", "usgic_product_code"):
+                if not getattr(self, name):
+                    raise ValueError(f"{name} is required when insurer_adapter is 'usgic'")
         return self
 
 

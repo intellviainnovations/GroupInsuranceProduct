@@ -1,0 +1,6426 @@
+{
+  "components": {
+    "schemas": {
+      "ActionResult": {
+        "additionalProperties": false,
+        "properties": {
+          "enrolment": {
+            "$ref": "#/components/schemas/EnrolmentDetail"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Outcome"
+          }
+        },
+        "required": [
+          "enrolment",
+          "outcome"
+        ],
+        "title": "ActionResult",
+        "type": "object"
+      },
+      "Approval": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "SUBMIT_SALE",
+              "CANCEL_CERTIFICATE",
+              "ATTENTION_RESOLVE"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "approval_id": {
+            "format": "uuid",
+            "title": "Approval Id",
+            "type": "string"
+          },
+          "can_decide": {
+            "title": "Can Decide",
+            "type": "boolean"
+          },
+          "checker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "checker_comment": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checker Comment"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "enrolment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enrolment Id"
+          },
+          "entity_id": {
+            "format": "uuid",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "enum": [
+              "ENROLMENT",
+              "CANCELLATION"
+            ],
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "evidence_ref": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ref"
+          },
+          "insured_name": {
+            "anyOf": [
+              {
+                "maxLength": 182,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insured Name"
+          },
+          "maker": {
+            "$ref": "#/components/schemas/UserRef"
+          },
+          "maker_comment": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maker Comment"
+          },
+          "our_reference_no": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Our Reference No"
+          },
+          "proposed_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "PAID",
+                  "PAYMENT_FAILED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Status"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "WITHDRAWN"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "approval_id",
+          "entity_type",
+          "entity_id",
+          "action",
+          "status",
+          "maker",
+          "requested_at",
+          "can_decide"
+        ],
+        "title": "Approval",
+        "type": "object"
+      },
+      "ApprovalPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Approval"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "ApprovalPage",
+        "type": "object"
+      },
+      "AttentionInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "enum": [
+              "POSTING_UNKNOWN",
+              "ISSUE_RETRIES_EXHAUSTED",
+              "ISSUE_UNKNOWN",
+              "PROPOSAL_UNKNOWN",
+              "CANCEL_UNKNOWN"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "since": {
+            "format": "date-time",
+            "title": "Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "since"
+        ],
+        "title": "AttentionInfo",
+        "type": "object"
+      },
+      "Branch": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "pattern": "^[A-Z0-9]{1,10}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "Branch",
+        "type": "object"
+      },
+      "CancellationInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "cancellation_id": {
+            "format": "uuid",
+            "title": "Cancellation Id",
+            "type": "string"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "reason_code": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "refund_amount": {
+            "anyOf": [
+              {
+                "examples": [
+                  "118.00"
+                ],
+                "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Amount"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "requested_by": {
+            "$ref": "#/components/schemas/UserRef"
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "PENDING_CHECK",
+              "SUBMITTED",
+              "COMPLETED",
+              "REJECTED",
+              "FAILED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cancellation_id",
+          "reason_code",
+          "status",
+          "requested_by",
+          "requested_at"
+        ],
+        "title": "CancellationInfo",
+        "type": "object"
+      },
+      "CancellationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason_code": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "remarks": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remarks"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "reason_code"
+        ],
+        "title": "CancellationRequest",
+        "type": "object"
+      },
+      "CbsAccount": {
+        "additionalProperties": false,
+        "properties": {
+          "account_key": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Account Key",
+            "type": "string"
+          },
+          "account_no_masked": {
+            "maxLength": 30,
+            "pattern": "^X*[0-9A-Za-z]{0,4}$",
+            "title": "Account No Masked",
+            "type": "string"
+          },
+          "account_status": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Status"
+          },
+          "account_type": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Type"
+          },
+          "branch_code": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch Code"
+          },
+          "holder_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holder Name"
+          },
+          "joint_account": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Joint Account"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "account_key",
+          "account_no_masked",
+          "selectable"
+        ],
+        "title": "CbsAccount",
+        "type": "object"
+      },
+      "CbsCustomer": {
+        "additionalProperties": false,
+        "properties": {
+          "cif_masked": {
+            "maxLength": 30,
+            "pattern": "^X*[0-9A-Za-z]{0,4}$",
+            "title": "Cif Masked",
+            "type": "string"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "customer_status": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Status"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "first_name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+            "title": "First Name",
+            "type": "string"
+          },
+          "gender_code": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender Code"
+          },
+          "home_branch_code": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Branch Code"
+          },
+          "kyc_status": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kyc Status"
+          },
+          "last_name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+            "title": "Last Name",
+            "type": "string"
+          },
+          "middle_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Middle Name"
+          },
+          "mobile_masked": {
+            "anyOf": [
+              {
+                "maxLength": 15,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile Masked"
+          },
+          "state_code": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Code"
+          }
+        },
+        "required": [
+          "cif_masked",
+          "first_name",
+          "last_name"
+        ],
+        "title": "CbsCustomer",
+        "type": "object"
+      },
+      "CertificateInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "certificate_no": {
+            "maxLength": 40,
+            "title": "Certificate No",
+            "type": "string"
+          },
+          "issued_at": {
+            "format": "date-time",
+            "title": "Issued At",
+            "type": "string"
+          },
+          "pdf_available": {
+            "title": "Pdf Available",
+            "type": "boolean"
+          },
+          "risk_end_date": {
+            "format": "date",
+            "title": "Risk End Date",
+            "type": "string"
+          },
+          "risk_start_date": {
+            "format": "date",
+            "title": "Risk Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "certificate_no",
+          "risk_start_date",
+          "risk_end_date",
+          "issued_at",
+          "pdf_available"
+        ],
+        "title": "CertificateInfo",
+        "type": "object"
+      },
+      "CommentedVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Comment",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "comment"
+        ],
+        "title": "CommentedVersion",
+        "type": "object"
+      },
+      "Consent": {
+        "additionalProperties": false,
+        "properties": {
+          "consented_at": {
+            "format": "date-time",
+            "title": "Consented At",
+            "type": "string"
+          },
+          "method": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Method",
+            "type": "string"
+          },
+          "reference": {
+            "maxLength": 60,
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "reference",
+          "consented_at"
+        ],
+        "title": "Consent",
+        "type": "object"
+      },
+      "ConsentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed_amount": {
+            "anyOf": [
+              {
+                "examples": [
+                  "118.00"
+                ],
+                "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Amount"
+          },
+          "method": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Method",
+            "type": "string"
+          },
+          "reference": {
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9/_ -]+$",
+            "title": "Reference",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "method",
+          "reference"
+        ],
+        "title": "ConsentRequest",
+        "type": "object"
+      },
+      "CustomerLookupRequest": {
+        "additionalProperties": false,
+        "description": "Exactly one of ``account_no`` and ``cif``.",
+        "properties": {
+          "account_no": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{6,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account No",
+            "writeOnly": true
+          },
+          "cif": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9]{1,20}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cif",
+            "writeOnly": true
+          }
+        },
+        "title": "CustomerLookupRequest",
+        "type": "object"
+      },
+      "CustomerLookupResult": {
+        "additionalProperties": false,
+        "properties": {
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/CbsAccount"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Accounts",
+            "type": "array"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CbsCustomer"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer",
+          "accounts",
+          "fetched_at"
+        ],
+        "title": "CustomerLookupResult",
+        "type": "object"
+      },
+      "Dashboard": {
+        "additionalProperties": false,
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "kpis": {
+            "$ref": "#/components/schemas/DashboardKpis"
+          },
+          "queues": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DashboardQueues"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "$ref": "#/components/schemas/DashboardScope"
+          }
+        },
+        "required": [
+          "as_of",
+          "scope",
+          "kpis"
+        ],
+        "title": "Dashboard",
+        "type": "object"
+      },
+      "DashboardKpis": {
+        "additionalProperties": false,
+        "properties": {
+          "drafts": {
+            "minimum": 0.0,
+            "title": "Drafts",
+            "type": "integer"
+          },
+          "gross_premium_month": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Gross Premium Month",
+            "type": "string"
+          },
+          "gross_premium_today": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Gross Premium Today",
+            "type": "string"
+          },
+          "in_process": {
+            "minimum": 0.0,
+            "title": "In Process",
+            "type": "integer"
+          },
+          "issued_month": {
+            "minimum": 0.0,
+            "title": "Issued Month",
+            "type": "integer"
+          },
+          "issued_today": {
+            "minimum": 0.0,
+            "title": "Issued Today",
+            "type": "integer"
+          },
+          "needs_attention": {
+            "minimum": 0.0,
+            "title": "Needs Attention",
+            "type": "integer"
+          },
+          "pending_approvals": {
+            "minimum": 0.0,
+            "title": "Pending Approvals",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "issued_today",
+          "issued_month",
+          "gross_premium_today",
+          "gross_premium_month",
+          "in_process",
+          "drafts",
+          "pending_approvals",
+          "needs_attention"
+        ],
+        "title": "DashboardKpis",
+        "type": "object"
+      },
+      "DashboardQueues": {
+        "additionalProperties": false,
+        "properties": {
+          "awaiting_my_approval": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Approval"
+                },
+                "maxItems": 5,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting My Approval"
+          },
+          "in_process": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EnrolmentSummary"
+                },
+                "maxItems": 5,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Process"
+          },
+          "my_drafts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EnrolmentSummary"
+                },
+                "maxItems": 5,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "My Drafts"
+          },
+          "needs_attention": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EnrolmentSummary"
+                },
+                "maxItems": 5,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs Attention"
+          },
+          "recently_issued": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EnrolmentSummary"
+                },
+                "maxItems": 5,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recently Issued"
+          }
+        },
+        "title": "DashboardQueues",
+        "type": "object"
+      },
+      "DashboardScope": {
+        "additionalProperties": false,
+        "properties": {
+          "all_branches": {
+            "title": "All Branches",
+            "type": "boolean"
+          },
+          "branch_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9]{1,10}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch Code"
+          }
+        },
+        "required": [
+          "all_branches"
+        ],
+        "title": "DashboardScope",
+        "type": "object"
+      },
+      "DecisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          }
+        },
+        "title": "DecisionRequest",
+        "type": "object"
+      },
+      "DocumentItem": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "document_id": {
+            "format": "uuid",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "file_name": {
+            "maxLength": 150,
+            "title": "File Name",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "COI",
+              "CONSENT_LETTER",
+              "ACKNOWLEDGEMENT"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "size_bytes": {
+            "minimum": 0.0,
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "document_id",
+          "kind",
+          "file_name",
+          "size_bytes",
+          "created_at"
+        ],
+        "title": "DocumentItem",
+        "type": "object"
+      },
+      "DraftCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "debit_account_key": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Debit Account Key",
+            "type": "string"
+          },
+          "lookup": {
+            "$ref": "#/components/schemas/CustomerLookupRequest"
+          },
+          "plan_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9]{1,10}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Code"
+          }
+        },
+        "required": [
+          "lookup",
+          "debit_account_key"
+        ],
+        "title": "DraftCreate",
+        "type": "object"
+      },
+      "DraftPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "debit_account_key": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debit Account Key"
+          },
+          "insured": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InsuredInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nominees": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/NomineeInput"
+                },
+                "maxItems": 10,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nominees"
+          },
+          "plan_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9]{1,10}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Code"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "DraftPatch",
+        "type": "object"
+      },
+      "EnrolmentCustomer": {
+        "additionalProperties": false,
+        "properties": {
+          "cbs_fetched_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cbs Fetched At"
+          },
+          "cif_masked": {
+            "maxLength": 30,
+            "pattern": "^X*[0-9A-Za-z]{0,4}$",
+            "title": "Cif Masked",
+            "type": "string"
+          },
+          "customer_id": {
+            "format": "uuid",
+            "title": "Customer Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id",
+          "cif_masked",
+          "cbs_fetched_at"
+        ],
+        "title": "EnrolmentCustomer",
+        "type": "object"
+      },
+      "EnrolmentDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_actions": {
+            "items": {
+              "enum": [
+                "EDIT",
+                "SUBMIT",
+                "CREATE_PROPOSAL",
+                "RECORD_CONSENT",
+                "POST_PAYMENT",
+                "RETRY_ISSUE",
+                "REOPEN",
+                "ABANDON",
+                "COPY",
+                "DOWNLOAD_CERTIFICATE",
+                "REQUEST_CANCELLATION",
+                "APPROVE",
+                "REJECT",
+                "RESOLVE"
+              ],
+              "type": "string"
+            },
+            "maxItems": 14,
+            "title": "Allowed Actions",
+            "type": "array"
+          },
+          "approvals": {
+            "items": {
+              "$ref": "#/components/schemas/Approval"
+            },
+            "maxItems": 20,
+            "title": "Approvals",
+            "type": "array"
+          },
+          "attention": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AttentionInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "branch": {
+            "$ref": "#/components/schemas/Branch"
+          },
+          "cancellation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CancellationInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "certificate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CertificateInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Consent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserRef"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/EnrolmentCustomer"
+          },
+          "debit_account": {
+            "$ref": "#/components/schemas/CbsAccount"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentItem"
+            },
+            "maxItems": 20,
+            "title": "Documents",
+            "type": "array"
+          },
+          "enrolment_id": {
+            "format": "uuid",
+            "title": "Enrolment Id",
+            "type": "string"
+          },
+          "insured": {
+            "$ref": "#/components/schemas/Insured"
+          },
+          "insurer_calls": {
+            "items": {
+              "$ref": "#/components/schemas/InsurerCallItem"
+            },
+            "maxItems": 100,
+            "title": "Insurer Calls",
+            "type": "array"
+          },
+          "nominees": {
+            "items": {
+              "$ref": "#/components/schemas/Nominee"
+            },
+            "maxItems": 10,
+            "title": "Nominees",
+            "type": "array"
+          },
+          "our_reference_no": {
+            "maxLength": 30,
+            "title": "Our Reference No",
+            "type": "string"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Plan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "postings": {
+            "items": {
+              "$ref": "#/components/schemas/PostingItem"
+            },
+            "maxItems": 50,
+            "title": "Postings",
+            "type": "array"
+          },
+          "premium": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Premium"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proposal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Proposal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "PENDING_CHECK",
+              "REJECTED",
+              "APPROVED",
+              "PROPOSAL_CREATED",
+              "PAYMENT_PENDING",
+              "PAYMENT_FAILED",
+              "PAID",
+              "ISSUED",
+              "PROPOSAL_REJECTED",
+              "PROPOSAL_CANCELLED",
+              "NEEDS_ATTENTION",
+              "CANCELLATION_PENDING",
+              "CANCELLED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "status_changed_at": {
+            "format": "date-time",
+            "title": "Status Changed At",
+            "type": "string"
+          },
+          "status_history": {
+            "items": {
+              "$ref": "#/components/schemas/StatusHistoryItem"
+            },
+            "maxItems": 200,
+            "title": "Status History",
+            "type": "array"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enrolment_id",
+          "our_reference_no",
+          "status",
+          "status_changed_at",
+          "version",
+          "branch",
+          "created_by",
+          "created_at",
+          "customer",
+          "debit_account",
+          "insured",
+          "nominees",
+          "postings",
+          "insurer_calls",
+          "status_history",
+          "approvals",
+          "documents",
+          "allowed_actions"
+        ],
+        "title": "EnrolmentDetail",
+        "type": "object"
+      },
+      "EnrolmentPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EnrolmentSummary"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "EnrolmentPage",
+        "type": "object"
+      },
+      "EnrolmentSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "attention_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "POSTING_UNKNOWN",
+                  "ISSUE_RETRIES_EXHAUSTED",
+                  "ISSUE_UNKNOWN",
+                  "PROPOSAL_UNKNOWN",
+                  "CANCEL_UNKNOWN"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attention Reason"
+          },
+          "branch_code": {
+            "pattern": "^[A-Z0-9]{1,10}$",
+            "title": "Branch Code",
+            "type": "string"
+          },
+          "certificate_no": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certificate No"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserRef"
+          },
+          "enrolment_id": {
+            "format": "uuid",
+            "title": "Enrolment Id",
+            "type": "string"
+          },
+          "gross_premium": {
+            "anyOf": [
+              {
+                "examples": [
+                  "118.00"
+                ],
+                "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Premium"
+          },
+          "insured_name": {
+            "maxLength": 182,
+            "title": "Insured Name",
+            "type": "string"
+          },
+          "insurer_proposal_no": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insurer Proposal No"
+          },
+          "our_reference_no": {
+            "maxLength": 30,
+            "title": "Our Reference No",
+            "type": "string"
+          },
+          "plan_code": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Code"
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "PENDING_CHECK",
+              "REJECTED",
+              "APPROVED",
+              "PROPOSAL_CREATED",
+              "PAYMENT_PENDING",
+              "PAYMENT_FAILED",
+              "PAID",
+              "ISSUED",
+              "PROPOSAL_REJECTED",
+              "PROPOSAL_CANCELLED",
+              "NEEDS_ATTENTION",
+              "CANCELLATION_PENDING",
+              "CANCELLED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "status_changed_at": {
+            "format": "date-time",
+            "title": "Status Changed At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enrolment_id",
+          "our_reference_no",
+          "status",
+          "status_changed_at",
+          "created_at",
+          "branch_code",
+          "insured_name",
+          "created_by"
+        ],
+        "title": "EnrolmentSummary",
+        "type": "object"
+      },
+      "Error": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "VALIDATION_FAILED",
+              "UNAUTHENTICATED",
+              "LOGIN_FAILED",
+              "CSRF_FAILED",
+              "FORBIDDEN",
+              "MAKER_CANNOT_CHECK",
+              "NOT_FOUND",
+              "CUSTOMER_NOT_FOUND",
+              "INVALID_STATE",
+              "VERSION_CONFLICT",
+              "IDEMPOTENCY_KEY_REUSED",
+              "IDEMPOTENCY_IN_PROGRESS",
+              "PREMIUM_MISMATCH",
+              "CONSENT_REQUIRED",
+              "ACCOUNT_NOT_ELIGIBLE",
+              "POSTING_UNRESOLVED",
+              "CBS_UNAVAILABLE",
+              "AUTH_UNAVAILABLE",
+              "SERVICE_UNAVAILABLE",
+              "RATE_LIMITED",
+              "INTERNAL"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
+          "error": {
+            "maxLength": 200,
+            "title": "Error",
+            "type": "string"
+          },
+          "fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldError"
+                },
+                "maxItems": 100,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fields"
+          }
+        },
+        "required": [
+          "error",
+          "code",
+          "correlation_id"
+        ],
+        "title": "Error",
+        "type": "object"
+      },
+      "FieldError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "REQUIRED",
+              "TOO_LONG",
+              "INVALID_FORMAT",
+              "INVALID_CODE",
+              "OUT_OF_RANGE",
+              "SHARES_NOT_100",
+              "NOT_ALLOWED",
+              "CBS_SOURCED_READ_ONLY",
+              "ACCOUNT_NOT_OF_CUSTOMER",
+              "ACCOUNT_NOT_SELECTABLE"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "field": {
+            "maxLength": 100,
+            "title": "Field",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "required": [
+          "field",
+          "code"
+        ],
+        "title": "FieldError",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      },
+      "Insured": {
+        "additionalProperties": false,
+        "properties": {
+          "address1": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address1"
+          },
+          "address2": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address2"
+          },
+          "any_disability": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Any Disability"
+          },
+          "cbs_sourced_fields": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Cbs Sourced Fields",
+            "type": "array"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "disability_description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disability Description"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "email",
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "gender_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender Code"
+          },
+          "guardian_name_address": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guardian Name Address"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "middle_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Middle Name"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{10,15}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "occupation_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occupation Code"
+          },
+          "other_occupation": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Occupation"
+          },
+          "pincode": {
+            "anyOf": [
+              {
+                "pattern": "^[1-9][0-9]{5}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pincode"
+          },
+          "state_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Code"
+          }
+        },
+        "required": [
+          "cbs_sourced_fields"
+        ],
+        "title": "Insured",
+        "type": "object"
+      },
+      "InsuredInput": {
+        "additionalProperties": false,
+        "properties": {
+          "address1": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address1"
+          },
+          "address2": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address2"
+          },
+          "any_disability": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Any Disability"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "disability_description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disability Description"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "email",
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "gender_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender Code"
+          },
+          "guardian_name_address": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guardian Name Address"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "middle_name": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Middle Name"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{10,15}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "occupation_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occupation Code"
+          },
+          "other_occupation": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Occupation"
+          },
+          "pincode": {
+            "anyOf": [
+              {
+                "pattern": "^[1-9][0-9]{5}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pincode"
+          },
+          "state_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Code"
+          }
+        },
+        "title": "InsuredInput",
+        "type": "object"
+      },
+      "InsurerCallItem": {
+        "additionalProperties": false,
+        "properties": {
+          "attempt_no": {
+            "minimum": 1.0,
+            "title": "Attempt No",
+            "type": "integer"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "error_category": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Category"
+          },
+          "operation": {
+            "maxLength": 40,
+            "title": "Operation",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "SUCCESS",
+              "REJECTED",
+              "ERROR",
+              "UNKNOWN"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "attempt_no",
+          "status",
+          "started_at"
+        ],
+        "title": "InsurerCallItem",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "branch_code": {
+            "pattern": "^[A-Z0-9]{1,10}$",
+            "title": "Branch Code",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "roll_no": {
+            "pattern": "^[A-Za-z0-9]{1,20}$",
+            "title": "Roll No",
+            "type": "string"
+          }
+        },
+        "required": [
+          "branch_code",
+          "roll_no",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "LoginResult": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Challenge Expires At"
+          },
+          "challenge_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Challenge Id"
+          },
+          "me": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Me"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "SIGNED_IN",
+              "OTP_REQUIRED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "LoginResult",
+        "type": "object"
+      },
+      "Me": {
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "$ref": "#/components/schemas/Branch"
+          },
+          "cross_branch": {
+            "default": false,
+            "title": "Cross Branch",
+            "type": "boolean"
+          },
+          "csrf_token": {
+            "maxLength": 64,
+            "minLength": 43,
+            "title": "Csrf Token",
+            "type": "string"
+          },
+          "designation": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Designation"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/MeEnvironment"
+          },
+          "roles": {
+            "items": {
+              "enum": [
+                "BRANCH_USER",
+                "CHECKER",
+                "OPERATIONS",
+                "REPORT_VIEWER",
+                "ADMIN",
+                "AUDITOR"
+              ],
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Roles",
+            "type": "array"
+          },
+          "roll_no": {
+            "pattern": "^[A-Za-z0-9]{1,20}$",
+            "title": "Roll No",
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/MeSession"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/MeSettings"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "roll_no",
+          "branch",
+          "roles",
+          "csrf_token",
+          "session",
+          "environment",
+          "settings"
+        ],
+        "title": "Me",
+        "type": "object"
+      },
+      "MeEnvironment": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "enum": [
+              "dev",
+              "demo",
+              "uat",
+              "prod"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "synthetic_data": {
+            "title": "Synthetic Data",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "mode",
+          "synthetic_data"
+        ],
+        "title": "MeEnvironment",
+        "type": "object"
+      },
+      "MeSession": {
+        "properties": {
+          "absolute_expires_at": {
+            "format": "date-time",
+            "title": "Absolute Expires At",
+            "type": "string"
+          },
+          "idle_expires_at": {
+            "format": "date-time",
+            "title": "Idle Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idle_expires_at",
+          "absolute_expires_at"
+        ],
+        "title": "MeSession",
+        "type": "object"
+      },
+      "MeSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "maker_checker_cancellation": {
+            "title": "Maker Checker Cancellation",
+            "type": "boolean"
+          },
+          "maker_checker_enrolment": {
+            "title": "Maker Checker Enrolment",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "maker_checker_enrolment",
+          "maker_checker_cancellation"
+        ],
+        "title": "MeSettings",
+        "type": "object"
+      },
+      "Nominee": {
+        "additionalProperties": false,
+        "properties": {
+          "account_holder_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Holder Name"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "maximum": 120.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "appointee_age": {
+            "anyOf": [
+              {
+                "maximum": 120.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Age"
+          },
+          "appointee_dob": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Dob"
+          },
+          "appointee_gender_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Gender Code"
+          },
+          "appointee_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Name"
+          },
+          "appointee_relation_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Relation Code"
+          },
+          "bank_account_masked": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account Masked"
+          },
+          "bank_account_no": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{6,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account No",
+            "writeOnly": true
+          },
+          "bank_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Name"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "email",
+            "title": "Email"
+          },
+          "gender_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender Code"
+          },
+          "ifsc": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ifsc"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{10,15}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "name": {
+            "maxLength": 150,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "permanent_address": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permanent Address"
+          },
+          "present_address": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Present Address"
+          },
+          "relation_code": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Relation Code",
+            "type": "string"
+          },
+          "seq": {
+            "minimum": 1.0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "share_percent": {
+            "pattern": "^(100(\\.0{1,4})?|[1-9]?[0-9](\\.[0-9]{1,4})?)$",
+            "title": "Share Percent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "relation_code",
+          "share_percent",
+          "seq"
+        ],
+        "title": "Nominee",
+        "type": "object"
+      },
+      "NomineeInput": {
+        "additionalProperties": false,
+        "properties": {
+          "account_holder_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Holder Name"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "maximum": 120.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "appointee_age": {
+            "anyOf": [
+              {
+                "maximum": 120.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Age"
+          },
+          "appointee_dob": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Dob"
+          },
+          "appointee_gender_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Gender Code"
+          },
+          "appointee_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Name"
+          },
+          "appointee_relation_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointee Relation Code"
+          },
+          "bank_account_no": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{6,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account No",
+            "writeOnly": true
+          },
+          "bank_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Name"
+          },
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "email",
+            "title": "Email"
+          },
+          "gender_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9_]{1,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender Code"
+          },
+          "ifsc": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ifsc"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{10,15}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "name": {
+            "maxLength": 150,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z .'-]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "permanent_address": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permanent Address"
+          },
+          "present_address": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Present Address"
+          },
+          "relation_code": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Relation Code",
+            "type": "string"
+          },
+          "share_percent": {
+            "pattern": "^(100(\\.0{1,4})?|[1-9]?[0-9](\\.[0-9]{1,4})?)$",
+            "title": "Share Percent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "relation_code",
+          "share_percent"
+        ],
+        "title": "NomineeInput",
+        "type": "object"
+      },
+      "OtpRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "otp": {
+            "pattern": "^[0-9]{4,8}$",
+            "title": "Otp",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "challenge_id",
+          "otp"
+        ],
+        "title": "OtpRequest",
+        "type": "object"
+      },
+      "Outcome": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "VALIDATION",
+                  "AUTH",
+                  "NOT_FOUND",
+                  "BUSINESS_RULE",
+                  "UNAVAILABLE",
+                  "TIMEOUT",
+                  "UNKNOWN",
+                  "CBS_DECLINED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "result": {
+            "enum": [
+              "DONE",
+              "REJECTED",
+              "QUEUED_FOR_RETRY",
+              "NEEDS_ATTENTION",
+              "PENDING_APPROVAL"
+            ],
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "Outcome",
+        "type": "object"
+      },
+      "Plan": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "title": "Name",
+            "type": "string"
+          },
+          "plan_code": {
+            "pattern": "^[A-Z0-9]{1,10}$",
+            "title": "Plan Code",
+            "type": "string"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanRate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "plan_code",
+          "name",
+          "rate"
+        ],
+        "title": "Plan",
+        "type": "object"
+      },
+      "PlanList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Plan"
+            },
+            "maxItems": 20,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PlanList",
+        "type": "object"
+      },
+      "PlanRate": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "gross_premium": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Gross Premium",
+            "type": "string"
+          },
+          "gst_amount": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Gst Amount",
+            "type": "string"
+          },
+          "net_premium": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Net Premium",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "policy_term_days": {
+            "maximum": 3660.0,
+            "minimum": 1.0,
+            "title": "Policy Term Days",
+            "type": "integer"
+          },
+          "rate_id": {
+            "format": "uuid",
+            "title": "Rate Id",
+            "type": "string"
+          },
+          "sum_insured": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Sum Insured",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rate_id",
+          "sum_insured",
+          "net_premium",
+          "gst_amount",
+          "gross_premium",
+          "policy_term_days",
+          "effective_from",
+          "synthetic"
+        ],
+        "title": "PlanRate",
+        "type": "object"
+      },
+      "PostingItem": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Amount",
+            "type": "string"
+          },
+          "attempt_no": {
+            "minimum": 1.0,
+            "title": "Attempt No",
+            "type": "integer"
+          },
+          "cbs_request_ref": {
+            "maxLength": 40,
+            "title": "Cbs Request Ref",
+            "type": "string"
+          },
+          "cbs_tran_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cbs Tran At"
+          },
+          "cbs_tran_id_masked": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cbs Tran Id Masked"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "kind": {
+            "enum": [
+              "PREMIUM",
+              "REFUND",
+              "REVERSAL"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "posting_id": {
+            "format": "uuid",
+            "title": "Posting Id",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "SUCCESS",
+              "FAILED",
+              "UNKNOWN",
+              "REVERSED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "posting_id",
+          "kind",
+          "amount",
+          "status",
+          "cbs_request_ref",
+          "attempt_no",
+          "requested_at"
+        ],
+        "title": "PostingItem",
+        "type": "object"
+      },
+      "Premium": {
+        "additionalProperties": false,
+        "properties": {
+          "gross_premium": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Gross Premium",
+            "type": "string"
+          },
+          "gst_amount": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Gst Amount",
+            "type": "string"
+          },
+          "matches_rate": {
+            "title": "Matches Rate",
+            "type": "boolean"
+          },
+          "net_premium": {
+            "examples": [
+              "118.00"
+            ],
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$",
+            "title": "Net Premium",
+            "type": "string"
+          }
+        },
+        "required": [
+          "net_premium",
+          "gst_amount",
+          "gross_premium",
+          "matches_rate"
+        ],
+        "title": "Premium",
+        "type": "object"
+      },
+      "Proposal": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "insurer_proposal_no": {
+            "maxLength": 30,
+            "title": "Insurer Proposal No",
+            "type": "string"
+          }
+        },
+        "required": [
+          "insurer_proposal_no",
+          "created_at"
+        ],
+        "title": "Proposal",
+        "type": "object"
+      },
+      "ReadyResponse": {
+        "properties": {
+          "checks": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Checks",
+            "type": "object"
+          },
+          "ready": {
+            "title": "Ready",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ready",
+          "checks"
+        ],
+        "title": "ReadyResponse",
+        "type": "object"
+      },
+      "RefCodeItem": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "pattern": "^[A-Z0-9_]{1,30}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 100,
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "RefCodeItem",
+        "type": "object"
+      },
+      "RefCodes": {
+        "additionalProperties": false,
+        "properties": {
+          "CANCEL_REASON": {
+            "items": {
+              "$ref": "#/components/schemas/RefCodeItem"
+            },
+            "maxItems": 200,
+            "title": "Cancel Reason",
+            "type": "array"
+          },
+          "CONSENT_METHOD": {
+            "items": {
+              "$ref": "#/components/schemas/RefCodeItem"
+            },
+            "maxItems": 200,
+            "title": "Consent Method",
+            "type": "array"
+          },
+          "GENDER": {
+            "items": {
+              "$ref": "#/components/schemas/RefCodeItem"
+            },
+            "maxItems": 200,
+            "title": "Gender",
+            "type": "array"
+          },
+          "OCCUPATION": {
+            "items": {
+              "$ref": "#/components/schemas/RefCodeItem"
+            },
+            "maxItems": 200,
+            "title": "Occupation",
+            "type": "array"
+          },
+          "RELATION": {
+            "items": {
+              "$ref": "#/components/schemas/RefCodeItem"
+            },
+            "maxItems": 200,
+            "title": "Relation",
+            "type": "array"
+          },
+          "STATE": {
+            "items": {
+              "$ref": "#/components/schemas/RefCodeItem"
+            },
+            "maxItems": 200,
+            "title": "State",
+            "type": "array"
+          }
+        },
+        "required": [
+          "GENDER",
+          "RELATION",
+          "OCCUPATION",
+          "STATE",
+          "CONSENT_METHOD",
+          "CANCEL_REASON"
+        ],
+        "title": "RefCodes",
+        "type": "object"
+      },
+      "RejectRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Comment",
+            "type": "string"
+          }
+        },
+        "required": [
+          "comment"
+        ],
+        "title": "RejectRequest",
+        "type": "object"
+      },
+      "ResolveRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "RECHECK",
+              "CONFIRM"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "evidence_ref": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ref"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "target_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "PAID",
+                  "PAYMENT_FAILED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Status"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "action"
+        ],
+        "title": "ResolveRequest",
+        "type": "object"
+      },
+      "StatusHistoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changed_at": {
+            "format": "date-time",
+            "title": "Changed At",
+            "type": "string"
+          },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
+          "from_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DRAFT",
+                  "PENDING_CHECK",
+                  "REJECTED",
+                  "APPROVED",
+                  "PROPOSAL_CREATED",
+                  "PAYMENT_PENDING",
+                  "PAYMENT_FAILED",
+                  "PAID",
+                  "ISSUED",
+                  "PROPOSAL_REJECTED",
+                  "PROPOSAL_CANCELLED",
+                  "NEEDS_ATTENTION",
+                  "CANCELLATION_PENDING",
+                  "CANCELLED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "to_status": {
+            "enum": [
+              "DRAFT",
+              "PENDING_CHECK",
+              "REJECTED",
+              "APPROVED",
+              "PROPOSAL_CREATED",
+              "PAYMENT_PENDING",
+              "PAYMENT_FAILED",
+              "PAID",
+              "ISSUED",
+              "PROPOSAL_REJECTED",
+              "PROPOSAL_CANCELLED",
+              "NEEDS_ATTENTION",
+              "CANCELLATION_PENDING",
+              "CANCELLED"
+            ],
+            "title": "To Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to_status",
+          "changed_at"
+        ],
+        "title": "StatusHistoryItem",
+        "type": "object"
+      },
+      "SubmitRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "SubmitRequest",
+        "type": "object"
+      },
+      "UserRef": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "roll_no": {
+            "pattern": "^[A-Za-z0-9]{1,20}$",
+            "title": "Roll No",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "roll_no"
+        ],
+        "title": "UserRef",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VersionOnly": {
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "VersionOnly",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "GroupInsuranceProduct",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/approvals": {
+      "get": {
+        "operationId": "listApprovals",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "SUBMIT_SALE",
+                    "CANCEL_CERTIFICATE",
+                    "ATTENTION_RESOLVE"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "PENDING",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "WITHDRAWN"
+              ],
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "entity_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "ENROLMENT",
+                    "CANCELLATION"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10000,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Approvals",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/approvals/{approval_id}/approve": {
+      "post": {
+        "operationId": "approve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "approval_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Approval Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/approvals/{approval_id}/reject": {
+      "post": {
+        "operationId": "reject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "approval_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Approval Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Reject",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp": {
+      "post": {
+        "operationId": "verifyOtp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Verify Otp",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/customers/lookup": {
+      "post": {
+        "operationId": "lookupCustomer",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerLookupResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Lookup Customer",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "operationId": "getDashboard",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "Get Dashboard",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/api/v1/enrolments": {
+      "get": {
+        "operationId": "listEnrolments",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "DRAFT",
+                      "PENDING_CHECK",
+                      "REJECTED",
+                      "APPROVED",
+                      "PROPOSAL_CREATED",
+                      "PAYMENT_PENDING",
+                      "PAYMENT_FAILED",
+                      "PAID",
+                      "ISSUED",
+                      "PROPOSAL_REJECTED",
+                      "PROPOSAL_CANCELLED",
+                      "NEEDS_ATTENTION",
+                      "CANCELLATION_PENDING",
+                      "CANCELLED"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 14,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "created_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Created From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "created_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Created To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "minLength": 3,
+                  "pattern": "^[A-Za-z0-9/_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "branch_code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Z0-9]{1,10}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Branch Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mine",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Mine",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10000,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "-created_at",
+              "enum": [
+                "-created_at",
+                "created_at",
+                "-status_changed_at",
+                "status_changed_at"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "List Enrolments",
+        "tags": [
+          "enrolments"
+        ]
+      },
+      "post": {
+        "operationId": "createDraft",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Draft",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}": {
+      "get": {
+        "operationId": "getEnrolment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Enrolment",
+        "tags": [
+          "enrolments"
+        ]
+      },
+      "patch": {
+        "operationId": "updateDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Update Draft",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/abandon": {
+      "post": {
+        "operationId": "abandonProposal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentedVersion"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Abandon Proposal",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/cancellation": {
+      "post": {
+        "operationId": "requestCancellation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancellationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Request Cancellation",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/certificate": {
+      "get": {
+        "operationId": "downloadCertificate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "contentMediaType": "application/pdf",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Certificate",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/consent": {
+      "post": {
+        "operationId": "recordConsent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Record Consent",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/copy": {
+      "post": {
+        "operationId": "copyToDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Copy To Draft",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/payment": {
+      "post": {
+        "operationId": "postPayment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionOnly"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Post Payment",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/policy": {
+      "post": {
+        "operationId": "retryIssue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionOnly"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Issue",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/proposal": {
+      "post": {
+        "operationId": "createProposal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionOnly"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Create Proposal",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/reopen": {
+      "post": {
+        "operationId": "reopenDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionOnly"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reopen Draft",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{enrolment_id}/submit": {
+      "post": {
+        "operationId": "submitDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Submit Draft",
+        "tags": [
+          "enrolments"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Get Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/operations/attention": {
+      "get": {
+        "operationId": "listAttention",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reason",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "POSTING_UNKNOWN",
+                    "ISSUE_RETRIES_EXHAUSTED",
+                    "ISSUE_UNKNOWN",
+                    "PROPOSAL_UNKNOWN",
+                    "CANCEL_UNKNOWN"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10000,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Attention",
+        "tags": [
+          "operations"
+        ]
+      }
+    },
+    "/api/v1/operations/attention/{enrolment_id}/resolve": {
+      "post": {
+        "operationId": "resolveAttention",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrolment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrolment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 43,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Csrf-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Resolve Attention",
+        "tags": [
+          "operations"
+        ]
+      }
+    },
+    "/api/v1/reference/codes": {
+      "get": {
+        "operationId": "listRefCodes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefCodes"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "List Ref Codes",
+        "tags": [
+          "reference"
+        ]
+      }
+    },
+    "/api/v1/reference/plans": {
+      "get": {
+        "operationId": "listPlans",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "List Plans",
+        "tags": [
+          "reference"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Liveness: the process is up and serving requests.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "description": "Readiness: every registered check passes. No checks exist yet, so it is ready.",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ready",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  }
+}
