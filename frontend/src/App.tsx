@@ -3,6 +3,8 @@ import { Navigate, Route, Routes, useLocation } from "react-router";
 import type { Role } from "./api/types";
 import { useAuth } from "./auth/AuthContext";
 import { AppLayout } from "./layout/AppLayout";
+import { Approvals } from "./pages/Approvals";
+import { Attention } from "./pages/Attention";
 import { Dashboard } from "./pages/Dashboard";
 import { EnrolmentDetail } from "./pages/EnrolmentDetail";
 import { EnrolmentList } from "./pages/EnrolmentList";
@@ -48,6 +50,8 @@ export function App() {
         <Route path="/enrolments/:id" element={<RequireRole roles={VIEWERS}><EnrolmentDetail /></RequireRole>} />
         <Route path="/sale/new" element={<RequireRole roles={["BRANCH_USER"]}><NewSale /></RequireRole>} />
         <Route path="/sale/:id" element={<RequireRole roles={["BRANCH_USER"]}><SaleWizard /></RequireRole>} />
+        <Route path="/approvals" element={<RequireRole roles={["CHECKER", "OPERATIONS", "AUDITOR"]}><Approvals /></RequireRole>} />
+        <Route path="/attention" element={<RequireRole roles={["OPERATIONS", "AUDITOR"]}><Attention /></RequireRole>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
