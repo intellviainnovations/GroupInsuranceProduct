@@ -6,6 +6,7 @@ import { AppLayout } from "./layout/AppLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { EnrolmentDetail } from "./pages/EnrolmentDetail";
 import { EnrolmentList } from "./pages/EnrolmentList";
+import { NewSale, SaleWizard } from "./pages/NewSale";
 import { NoAccess, NotFound } from "./pages/NotFound";
 import { SignIn } from "./pages/SignIn";
 import { Spinner } from "./ui/components";
@@ -45,6 +46,8 @@ export function App() {
         <Route path="/dashboard" element={<RequireRole roles="any"><Dashboard /></RequireRole>} />
         <Route path="/enrolments" element={<RequireRole roles={VIEWERS}><EnrolmentList /></RequireRole>} />
         <Route path="/enrolments/:id" element={<RequireRole roles={VIEWERS}><EnrolmentDetail /></RequireRole>} />
+        <Route path="/sale/new" element={<RequireRole roles={["BRANCH_USER"]}><NewSale /></RequireRole>} />
+        <Route path="/sale/:id" element={<RequireRole roles={["BRANCH_USER"]}><SaleWizard /></RequireRole>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
