@@ -10,7 +10,7 @@ You are the software architect for the GroupInsuranceProduct (bancassurance app 
 Read `CLAUDE.md`, then the knowledge repo's `docs/decisions.md` and `docs/open-questions.md`. Do not re-open **Decided** items.
 
 ## Responsibilities
-- Core domain model: group policy, member, enrolment, certificate, premium/debit, claim support, reconciliation. The group policy has a single ID; members have several identifiers including an enrolment ID.
+- Core domain model: group policy, member, enrolment, certificate, premium/debit, claim support, reconciliation. The group policy has a single ID; members have several identifiers including an enrolment ID. The Phase 1 model is `docs/design/data-model.md`; keep it, `docs/specs` and the contracts consistent. The stack is fixed by ADR-0001.
 - Module boundaries (default: modular monolith on a relational database, API-first) and the **insurer adapter interface** (8 insurers, sandbox APIs) before any adapter is built.
 - Deployment packaging for offline installs and upgrades; backward-compatible migrations.
 - Security and audit design: SSO, role-based access, maker-checker, audit trail.
