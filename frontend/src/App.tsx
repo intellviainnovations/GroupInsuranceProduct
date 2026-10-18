@@ -1,13 +1,46 @@
-import { Navigate, Route, Routes } from "react-router";
-import { NotFound } from "./pages/NotFound";
+import type { ReactNode } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router";
+import type { Role } from "./api/types";
+import { useAuth } from "./auth/AuthContext";
+import { AppLayout } from "./layout/AppLayout";
+import { Dashboard } from "./pages/Dashboard";
+import { NoAccess, NotFound } from "./pages/NotFound";
 import { SignIn } from "./pages/SignIn";
+import { Spinner } from "./ui/components";
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { me, checking } = useAuth();
+  const loc = useLocation();
+  if (checking) return <Spinner />;
+  if (!me) return <Navigate to="/sign-in" replace state={{ from: loc.pathname }} />;
+  return <>{children}</>;
+}
+
+function RequireRole({ roles, children }: { roles: Role[] | "any"; children: ReactNode }) {
+  const { me, hasRole } = useAuth();
+  if (!me || me.roles.length === 0) return <NoAccess />;
+  if (roles !== "any" && !hasRole(...roles)) return <NoAccess />;
+  return <>{children}</>;
+}
 
 export function App() {
+  const { sessionKey, checking } = useAuth();
+  if (checking) return <Spinner />;
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/sign-in" replace />} />
+    // Keyed by session: signing out or in remounts every screen, dropping form state.
+    <Routes key={sessionKey}>
       <Route path="/sign-in" element={<SignIn />} />
-      <Route path="*" element={<NotFound />} />
+      <Route
+        element={
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        }
+      >
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<RequireRole roles="any"><Dashboard /></RequireRole>} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
     </Routes>
   );
 }
