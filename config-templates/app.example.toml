@@ -1,0 +1,10 @@
+# Example protected configuration file. Placeholders only; never commit real values.
+# Point APP_CONFIG_FILE at a copy of this file kept outside the repository, readable only by
+# the service account (on Linux: chmod 600; the application refuses a file open to others).
+# Environment variables (ENV, APP_<FIELD>) override values here.
+
+log_level = "INFO"                       # DEBUG, INFO, WARNING, ERROR, CRITICAL
+database_url = "<set-in-protected-copy>"  # PostgreSQL URL incl. credentials; required unless ENV=dev
+throttle_enabled = true
+throttle_max_requests = 120              # requests per client address per window, per process
+throttle_window_seconds = 60

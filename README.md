@@ -21,6 +21,18 @@ Bancassurance web application for bank employees to sell insurance partners' pro
 
 Project background, decisions and open questions: `intellviainnovations/GroupInsuranceProduct-Project-Knowledge`.
 
+## Developing
+Backend (Python 3.12 for CI and release; any 3.12 or newer works locally). From the repo root:
+```bash
+python -m venv .venv && . .venv/bin/activate        # Windows: .venv\Scripts\activate
+python -m pip install -r requirements/dev.txt        # exact pinned versions
+ENV=dev uvicorn --factory backend.api.app:create_app --no-server-header --app-dir src --reload
+# then: curl http://127.0.0.1:8000/health   (interactive docs at /docs in dev mode only)
+ruff check src tests && ruff format --check src tests && mypy && pytest
+bash scripts/check_repo.sh                           # hygiene and secret scan
+```
+Any `ENV` other than `dev` (including unset) is production mode: docs and schema endpoints are off, `APP_DATABASE_URL` is required, and startup fails with a clear message if it is missing. Always start uvicorn with `--no-server-header`. Settings come from environment variables and an optional protected TOML file (`APP_CONFIG_FILE`); see `config-templates/`. Frontend: see `frontend/README.md`.
+
 ## Licence
 Proprietary. © 2026 Intellvia Innovations LLP. All rights reserved. See `LICENSE`.
 
