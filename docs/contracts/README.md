@@ -9,7 +9,7 @@ Interface definitions that implementations must follow. Define a contract **befo
 | [`bank-auth`](bank-auth.md) | Staff sign-in through the bank's AD/CHRISS API behind an `AuthProvider` port; our session flow | Proposed |
 | [`cbs-customer-lookup`](cbs-customer-lookup.md) | Read-only customer and account lookup from the CBS report server, replacing the Finacle menu | Proposed shape, blocked by access details (Q33) |
 | [`cbs-posting`](cbs-posting.md) | Debit customer and credit pool account through the CBS transaction path; reconciliation reads | Proposed shape, blocked by the CBS transaction spec (Q27) |
-| `member-enrolment-api` | Our own HTTP API for the web (and later mobile) client | To be written as an OpenAPI file by the first backend tasks, from `docs/specs/usgic-gpa-sale-flow.md` and `docs/design/data-model.md` |
+| [`staff-api`](staff-api.md) ([OpenAPI](staff-api.openapi.yaml)) | Our own HTTP API for the staff web app (and later mobile): auth, CSRF, reference data, CBS lookup, sale flow actions, approvals, operations queue, dashboard. Replaces the `member-enrolment-api` placeholder | Proposed (2026-10-18) |
 | `release-bundle` | Contents and signature format of a release bundle | To be written (owner: architect, with the release agent) |
 
 Format for the HTTP API: an OpenAPI file plus a short README. The generated client types are shared with the React app (and a later React Native app).

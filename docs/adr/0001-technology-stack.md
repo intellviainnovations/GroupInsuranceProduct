@@ -48,6 +48,15 @@ Approved by accepting this ADR. Any other dependency needs a human's approval (C
 - Backend: `fastapi`, `uvicorn`, `pydantic`, `sqlalchemy`, `alembic`, `psycopg` (v3), `httpx`, `cryptography`, `oracledb` (read-only CBS access, subject to Q33); dev only: `pytest`, `ruff`, `mypy`, `pip-audit`.
 - Frontend: `react`, `react-dom`, `react-router`, `typescript`, `vite`; dev only: `vitest`, `eslint`.
 
+**Amendment 1 (product owner, Decided 2026-10-18; answers Q35 for these packages only):**
+| Package | Scope | Justification |
+|---|---|---|
+| `tailwindcss` | build | Utility CSS compiled at build time to a static stylesheet; no runtime script in the browser, keeps a consistent production-looking UI without a component library |
+| `@tailwindcss/vite` | build (dev dependency) | Official Vite integration for Tailwind; avoids adding PostCSS tooling separately |
+| `@types/react`, `@types/react-dom` | dev only | Type definitions so `tsc` checks React code; nothing ships to the browser |
+| `typescript-eslint` | dev only | Lets ESLint parse and lint TypeScript sources; nothing ships to the browser |
+Icons are inline SVG (no icon package). The remaining Q35 items (`jsdom`, `@vitejs/plugin-react`, `@eslint/js`, `httpx2`, Python build backend) are still open.
+
 ### Repository layout (target)
 `src/backend/` Python package; `frontend/` React source (not released, only its build output); `migrations/` Alembic; `config-templates/`; `tests/`. See `docs/design/architecture.md`.
 

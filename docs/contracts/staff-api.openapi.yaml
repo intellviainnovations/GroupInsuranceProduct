@@ -1,0 +1,1408 @@
+openapi: 3.1.0
+info:
+  title: GroupInsuranceProduct staff API
+  version: 0.1.0
+  summary: Browser <-> backend contract for the staff web app (USGIC GPA, Phase 1).
+  description: |
+    Status: Proposed (architect, 2026-10-18). Source of truth for the staff web app.
+    Conventions, CSRF, idempotency and the role table: `docs/contracts/staff-api.md`.
+    Flow and states: `docs/specs/usgic-gpa-sale-flow.md`. Columns and lengths: `docs/design/data-model.md`.
+
+    - Every operation carries `x-roles` (roles allowed; `ANY_SESSION` = signed in, even with no role;
+      `ANY_ROLE` = signed in with at least one role; `PUBLIC` = no session).
+    - Every unsafe operation (POST/PATCH) except login and OTP requires the `X-CSRF-Token` header.
+    - Operations that call the insurer or move money require `Idempotency-Key`.
+    - Money is a decimal string in INR with two decimals. Dates are `YYYY-MM-DD`; timestamps are UTC ISO 8601.
+    - All data in examples is synthetic. Plan rates are synthetic and labelled so; premiums come from the insurer (or its fake).
+servers:
+  - url: /api/v1
+security:
+  - sessionCookie: []
+tags:
+  - name: auth
+  - name: reference
+  - name: customers
+  - name: enrolments
+  - name: approvals
+  - name: operations
+  - name: dashboard
+
+paths:
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Sign in with branch code, roll number and password (bank AD/CHRISS behind AuthProvider).
+      x-roles: [PUBLIC]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Signed in (cookie set) or an OTP is required (no cookie yet).
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/SessionCookie' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResult' }
+        '401': { $ref: '#/components/responses/LoginFailed' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /auth/otp:
+    post:
+      tags: [auth]
+      operationId: verifyOtp
+      summary: Complete sign-in with the OTP sent by the bank.
+      x-roles: [PUBLIC]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OtpRequest' }
+      responses:
+        '200':
+          description: Signed in; cookie set.
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/SessionCookie' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResult' }
+        '401': { $ref: '#/components/responses/LoginFailed' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      x-roles: [ANY_SESSION]
+      parameters: [ { $ref: '#/components/parameters/CsrfToken' } ]
+      responses:
+        '204':
+          description: Session revoked; cookie cleared.
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/SessionCookie' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: Current user, roles, branch, CSRF token, environment banner and feature settings.
+      x-roles: [ANY_SESSION]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+
+  /reference/codes:
+    get:
+      tags: [reference]
+      operationId: listRefCodes
+      x-roles: [ANY_ROLE]
+      responses:
+        '200':
+          description: Active reference codes grouped by category, in sort order.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RefCodes' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reference/plans:
+    get:
+      tags: [reference]
+      operationId: listPlans
+      summary: Active plans with the rate in force today (for information only; the insurer's premium is authoritative).
+      x-roles: [ANY_ROLE]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    maxItems: 20
+                    items: { $ref: '#/components/schemas/Plan' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers/lookup:
+    post:
+      tags: [customers]
+      operationId: lookupCustomer
+      summary: Read customer and accounts from the CBS report server by account number or CIF. Read-only; creates nothing.
+      description: POST so identifiers never appear in URLs or access logs. Audited with the identifier masked to its last four characters.
+      x-roles: [BRANCH_USER]
+      parameters: [ { $ref: '#/components/parameters/CsrfToken' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerLookupRequest' }
+      responses:
+        '200':
+          description: Found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerLookupResult' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /enrolments:
+    get:
+      tags: [enrolments]
+      operationId: listEnrolments
+      summary: Branch-scoped list (cross-branch roles see all branches).
+      x-roles: [BRANCH_USER, CHECKER, OPERATIONS, AUDITOR]
+      parameters:
+        - name: status
+          in: query
+          description: Repeatable; any of the listed statuses.
+          schema:
+            type: array
+            maxItems: 14
+            items: { $ref: '#/components/schemas/EnrolmentStatus' }
+          style: form
+          explode: true
+        - name: created_from
+          in: query
+          description: Inclusive business date (IST).
+          schema: { type: string, format: date }
+        - name: created_to
+          in: query
+          description: Inclusive business date (IST).
+          schema: { type: string, format: date }
+        - name: q
+          in: query
+          description: Prefix match on our reference, insurer proposal number or certificate number. No name search in Phase 1.
+          schema: { type: string, minLength: 3, maxLength: 40, pattern: '^[A-Za-z0-9/_-]+$' }
+        - name: branch_code
+          in: query
+          description: Honoured only for cross-branch roles (OPERATIONS, AUDITOR); ignored otherwise.
+          schema: { $ref: '#/components/schemas/BranchCode' }
+        - name: mine
+          in: query
+          description: Only enrolments created by the signed-in user.
+          schema: { type: boolean, default: false }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: sort
+          in: query
+          schema: { type: string, enum: [-created_at, created_at, -status_changed_at, status_changed_at], default: -created_at }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrolmentPage' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    post:
+      tags: [enrolments]
+      operationId: createDraft
+      summary: Create a DRAFT from a fresh CBS read. The branch is the session's branch; the insured is pre-filled from the CBS.
+      description: |
+        The server re-reads the customer with the same identifier used for the lookup and accepts the debit
+        account only if its `account_key` is among that customer's accounts (spec criteria 16, 17). Nothing is
+        saved if the CBS is unavailable.
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKeyOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DraftCreate' }
+      responses:
+        '201':
+          description: Created.
+          headers:
+            Location: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrolmentDetail' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /enrolments/{enrolment_id}:
+    parameters: [ { $ref: '#/components/parameters/EnrolmentId' } ]
+    get:
+      tags: [enrolments]
+      operationId: getEnrolment
+      summary: Full detail including nominees, premium, postings, insurer-call summary, status history and allowed actions. Out-of-scope ids return 404.
+      x-roles: [BRANCH_USER, CHECKER, OPERATIONS, AUDITOR]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrolmentDetail' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [enrolments]
+      operationId: updateDraft
+      summary: Update sections of a DRAFT. Partial drafts are allowed; completeness is enforced at submit.
+      description: Each section present replaces that section entirely (nominees replace the whole list). `version` must match (optimistic locking).
+      x-roles: [BRANCH_USER]
+      parameters: [ { $ref: '#/components/parameters/CsrfToken' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DraftPatch' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrolmentDetail' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /enrolments/{enrolment_id}/submit:
+    post:
+      tags: [enrolments]
+      operationId: submitDraft
+      summary: Full server validation; DRAFT -> PENDING_CHECK (maker-checker on) or APPROVED (off).
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /enrolments/{enrolment_id}/proposal:
+    post:
+      tags: [enrolments]
+      operationId: createProposal
+      summary: APPROVED -> create_proposal at the insurer. Result PROPOSAL_CREATED, PROPOSAL_REJECTED, or unchanged with a queued retry / NEEDS_ATTENTION.
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { $ref: '#/components/requestBodies/VersionOnly' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /enrolments/{enrolment_id}/consent:
+    post:
+      tags: [enrolments]
+      operationId: recordConsent
+      summary: Record the customer's consent to debit the insurer's gross premium. PROPOSAL_CREATED or PAYMENT_FAILED only; no state change (Q28).
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConsentRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /enrolments/{enrolment_id}/payment:
+    post:
+      tags: [enrolments]
+      operationId: postPayment
+      summary: Re-read the debit account, post one CBS transaction (debit customer, credit pool) for the insurer's gross premium, then attempt issue_policy and certificate fetch.
+      description: |
+        Refused with 409 `PREMIUM_MISMATCH`, `CONSENT_REQUIRED` or `ACCOUNT_NOT_ELIGIBLE`. On CBS success the
+        service continues to issue_policy in the same request; if that fails the enrolment stays PAID and a retry
+        job is queued (outcome `QUEUED_FOR_RETRY`). Never re-posts while a posting is UNKNOWN.
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { $ref: '#/components/requestBodies/VersionOnly' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /enrolments/{enrolment_id}/policy:
+    post:
+      tags: [enrolments]
+      operationId: retryIssue
+      summary: PAID only. Read the insurer's state (get_proposal) first, then issue_policy if not yet issued, then fetch the certificate. Also re-fetches a missing certificate PDF on ISSUED.
+      x-roles: [BRANCH_USER, OPERATIONS]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { $ref: '#/components/requestBodies/VersionOnly' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /enrolments/{enrolment_id}/reopen:
+    post:
+      tags: [enrolments]
+      operationId: reopenDraft
+      summary: PROPOSAL_REJECTED -> DRAFT so the maker can correct and resubmit.
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody: { $ref: '#/components/requestBodies/VersionOnly' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /enrolments/{enrolment_id}/abandon:
+    post:
+      tags: [enrolments]
+      operationId: abandonProposal
+      summary: PROPOSAL_CREATED or PAYMENT_FAILED -> cancel_proposal at the insurer -> PROPOSAL_CANCELLED.
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CommentedVersion' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /enrolments/{enrolment_id}/copy:
+    post:
+      tags: [enrolments]
+      operationId: copyToDraft
+      summary: REJECTED (by checker) -> new DRAFT with the same entries after a fresh CBS read. The original stays terminal.
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKeyOptional'
+      responses:
+        '201':
+          description: New draft.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrolmentDetail' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /enrolments/{enrolment_id}/certificate:
+    get:
+      tags: [enrolments]
+      operationId: downloadCertificate
+      summary: The COI PDF exactly as received from the insurer (SHA-256 checked on read). Audited.
+      x-roles: [BRANCH_USER, CHECKER, OPERATIONS, AUDITOR]
+      parameters: [ { $ref: '#/components/parameters/EnrolmentId' } ]
+      responses:
+        '200':
+          description: PDF
+          headers:
+            Content-Disposition:
+              schema: { type: string, example: 'attachment; filename="COI-SYN-GPA-000001.pdf"' }
+          content:
+            application/pdf:
+              schema: { type: string, contentMediaType: application/pdf }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /enrolments/{enrolment_id}/cancellation:
+    post:
+      tags: [enrolments]
+      operationId: requestCancellation
+      summary: Request cancellation of an ISSUED certificate. With maker-checker on, creates a PENDING approval; otherwise sends it to the insurer (refund as returned by the insurer, Q26).
+      x-roles: [BRANCH_USER]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancellationRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /approvals:
+    get:
+      tags: [approvals]
+      operationId: listApprovals
+      summary: Approval queue. CHECKER sees SUBMIT_SALE and CANCEL_CERTIFICATE for their branch; OPERATIONS sees ATTENTION_RESOLVE for all branches; AUDITOR sees all. Items the caller requested are returned with `can_decide = false`.
+      x-roles: [CHECKER, OPERATIONS, AUDITOR]
+      parameters:
+        - name: action
+          in: query
+          schema: { $ref: '#/components/schemas/ApprovalAction' }
+        - name: status
+          in: query
+          schema: { type: string, enum: [PENDING, APPROVED, REJECTED, WITHDRAWN], default: PENDING }
+        - name: entity_type
+          in: query
+          schema: { type: string, enum: [ENROLMENT, CANCELLATION] }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApprovalPage' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /approvals/{approval_id}/approve:
+    post:
+      tags: [approvals]
+      operationId: approve
+      summary: Approve (never the requester -> 403 MAKER_CANNOT_CHECK). SUBMIT_SALE -> APPROVED; CANCEL_CERTIFICATE -> sent to the insurer; ATTENTION_RESOLVE -> the proposed transition is applied.
+      x-roles: [CHECKER, OPERATIONS]
+      x-role-by-action: { SUBMIT_SALE: CHECKER, CANCEL_CERTIFICATE: CHECKER, ATTENTION_RESOLVE: OPERATIONS }
+      parameters:
+        - $ref: '#/components/parameters/ApprovalId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DecisionRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /approvals/{approval_id}/reject:
+    post:
+      tags: [approvals]
+      operationId: reject
+      summary: Reject with a mandatory comment. SUBMIT_SALE -> enrolment REJECTED (terminal); CANCEL_CERTIFICATE -> request REJECTED, certificate stays ISSUED; ATTENTION_RESOLVE -> enrolment stays NEEDS_ATTENTION.
+      x-roles: [CHECKER, OPERATIONS]
+      x-role-by-action: { SUBMIT_SALE: CHECKER, CANCEL_CERTIFICATE: CHECKER, ATTENTION_RESOLVE: OPERATIONS }
+      parameters:
+        - $ref: '#/components/parameters/ApprovalId'
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /operations/attention:
+    get:
+      tags: [operations]
+      operationId: listAttention
+      summary: NEEDS_ATTENTION enrolments across branches, oldest first, with the reason.
+      x-roles: [OPERATIONS, AUDITOR]
+      parameters:
+        - name: reason
+          in: query
+          schema: { $ref: '#/components/schemas/AttentionReason' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EnrolmentPage' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /operations/attention/{enrolment_id}/resolve:
+    post:
+      tags: [operations]
+      operationId: resolveAttention
+      summary: RECHECK reads the insurer/CBS state and applies it at once; CONFIRM creates a PENDING `ATTENTION_RESOLVE` approval for a second OPERATIONS user.
+      description: |
+        RECHECK (single user, Decided 2026-10-18): the state changes only to what the insurer or CBS read-back reports, so no second person is needed.
+        CONFIRM (two people, Decided 2026-10-18): creates an approval (entity ENROLMENT, action ATTENTION_RESOLVE) holding `target_status`, `note` and `evidence_ref`;
+        no transition happens. Outcome `PENDING_APPROVAL`. A different OPERATIONS user approves (transition applied, if the enrolment is still NEEDS_ATTENTION at that `version`) or rejects via `/approvals/{id}/approve|reject`.
+        One pending ATTENTION_RESOLVE per enrolment (409 INVALID_STATE otherwise).
+        CONFIRM targets are PAID and PAYMENT_FAILED; ISSUED is reached only by RECHECK because the certificate number and risk dates must come from the insurer.
+      x-roles: [OPERATIONS]
+      parameters:
+        - $ref: '#/components/parameters/EnrolmentId'
+        - $ref: '#/components/parameters/CsrfToken'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionDone' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /dashboard:
+    get:
+      tags: [dashboard]
+      operationId: getDashboard
+      summary: KPIs and short queues for the caller's scope; sections the caller's roles do not cover are omitted.
+      x-roles: [ANY_ROLE]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: gip_session
+      description: Opaque 256-bit random id; HttpOnly, Secure, SameSite=Strict, Path=/api. Stored server-side only as a hash.
+
+  headers:
+    SessionCookie:
+      description: Sets or clears `gip_session`.
+      schema: { type: string }
+
+  parameters:
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Token from `/me` or the login result, bound to the session (HMAC of the session id). Required on every unsafe method except login and OTP.
+      schema: { type: string, minLength: 43, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$' }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated UUID per user intent (one per button click, reused on automatic retry). Kept 24 h.
+      schema: { type: string, format: uuid }
+    IdempotencyKeyOptional:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, format: uuid }
+    EnrolmentId:
+      name: enrolment_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ApprovalId:
+      name: approval_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 10000, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  requestBodies:
+    VersionOnly:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VersionOnly' }
+
+  responses:
+    ActionDone:
+      description: The action was processed; `outcome` says what happened (including an insurer rejection or a queued retry).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ActionResult' }
+    LoginFailed:
+      description: One generic message for wrong credentials, locked account, invalid or expired OTP (code LOGIN_FAILED).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthenticated:
+      description: No valid session (code UNAUTHENTICATED).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: Missing role, CSRF failure, or requester deciding their own approval (codes FORBIDDEN, CSRF_FAILED, MAKER_CANNOT_CHECK).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Unknown or out-of-scope resource; unknown customer (codes NOT_FOUND, CUSTOMER_NOT_FOUND).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Conflict:
+      description: Wrong state or stale version or business refusal (codes INVALID_STATE, VERSION_CONFLICT, IDEMPOTENCY_IN_PROGRESS, PREMIUM_MISMATCH, CONSENT_REQUIRED, ACCOUNT_NOT_ELIGIBLE, POSTING_UNRESOLVED).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    ValidationFailed:
+      description: Field-level errors (codes VALIDATION_FAILED, IDEMPOTENCY_KEY_REUSED).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    RateLimited:
+      description: Throttled (code RATE_LIMITED); `Retry-After` header set.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    ServiceUnavailable:
+      description: A dependency is unavailable and nothing was saved (codes CBS_UNAVAILABLE, AUTH_UNAVAILABLE, SERVICE_UNAVAILABLE).
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  schemas:
+    # ---------- primitives ----------
+    Uuid: { type: string, format: uuid }
+    Money:
+      type: string
+      description: INR, two decimals, no sign, no separators. NUM(14,2).
+      pattern: '^(0|[1-9][0-9]{0,11})\.[0-9]{2}$'
+      examples: ['118.00']
+    Percent:
+      type: string
+      description: NUM(7,4) as a string, 0 < x <= 100.
+      pattern: '^(100(\.0{1,4})?|[1-9]?[0-9](\.[0-9]{1,4})?)$'
+    RefCodeValue: { type: string, pattern: '^[A-Z0-9_]{1,30}$' }
+    BranchCode: { type: string, pattern: '^[A-Z0-9]{1,10}$' }
+    RollNo: { type: string, pattern: '^[A-Za-z0-9]{1,20}$' }
+    PersonName: { type: string, minLength: 1, maxLength: 60, pattern: "^[A-Za-z][A-Za-z .'-]*$" }
+    FullName: { type: string, minLength: 1, maxLength: 150, pattern: "^[A-Za-z][A-Za-z .'-]*$" }
+    Mobile: { type: string, pattern: '^[0-9]{10,15}$', description: Digits only. }
+    Email: { type: string, format: email, maxLength: 150 }
+    Pincode: { type: string, pattern: '^[1-9][0-9]{5}$' }
+    Ifsc: { type: string, pattern: '^[A-Z]{4}0[A-Z0-9]{6}$' }
+    AccountKey:
+      type: string
+      description: Keyed hash of the account number (`customer_account.account_no_hash`); the full number never returns to the browser.
+      pattern: '^[0-9a-f]{64}$'
+    Masked: { type: string, maxLength: 30, pattern: '^X*[0-9A-Za-z]{0,4}$', examples: ['XXXXXXXX0011'] }
+    EnrolmentStatus:
+      type: string
+      enum: [DRAFT, PENDING_CHECK, REJECTED, APPROVED, PROPOSAL_CREATED, PAYMENT_PENDING, PAYMENT_FAILED, PAID, ISSUED,
+             PROPOSAL_REJECTED, PROPOSAL_CANCELLED, NEEDS_ATTENTION, CANCELLATION_PENDING, CANCELLED]
+    Role:
+      type: string
+      enum: [BRANCH_USER, CHECKER, OPERATIONS, REPORT_VIEWER, ADMIN, AUDITOR]
+      description: Proposed names (Q32).
+    AllowedAction:
+      type: string
+      enum: [EDIT, SUBMIT, CREATE_PROPOSAL, RECORD_CONSENT, POST_PAYMENT, RETRY_ISSUE, REOPEN, ABANDON, COPY,
+             DOWNLOAD_CERTIFICATE, REQUEST_CANCELLATION, APPROVE, REJECT, RESOLVE]
+    AttentionReason:
+      type: string
+      enum: [POSTING_UNKNOWN, ISSUE_RETRIES_EXHAUSTED, ISSUE_UNKNOWN, PROPOSAL_UNKNOWN, CANCEL_UNKNOWN]
+
+    # ---------- errors ----------
+    Error:
+      type: object
+      required: [error, code, correlation_id]
+      additionalProperties: false
+      properties:
+        error: { type: string, maxLength: 200, description: Generic, safe message. Never contains personal data or values. }
+        code:
+          type: string
+          enum: [VALIDATION_FAILED, UNAUTHENTICATED, LOGIN_FAILED, CSRF_FAILED, FORBIDDEN, MAKER_CANNOT_CHECK, NOT_FOUND,
+                 CUSTOMER_NOT_FOUND, INVALID_STATE, VERSION_CONFLICT, IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS,
+                 PREMIUM_MISMATCH, CONSENT_REQUIRED, ACCOUNT_NOT_ELIGIBLE, POSTING_UNRESOLVED, CBS_UNAVAILABLE,
+                 AUTH_UNAVAILABLE, SERVICE_UNAVAILABLE, RATE_LIMITED, INTERNAL]
+        correlation_id: { type: [string, 'null'], maxLength: 40 }
+        fields:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/FieldError' }
+    FieldError:
+      type: object
+      required: [field, code]
+      additionalProperties: false
+      properties:
+        field: { type: string, maxLength: 100, description: 'JSON path into the request, e.g. `nominees[1].share_percent`.' }
+        code:
+          type: string
+          enum: [REQUIRED, TOO_LONG, INVALID_FORMAT, INVALID_CODE, OUT_OF_RANGE, SHARES_NOT_100, NOT_ALLOWED,
+                 CBS_SOURCED_READ_ONLY, ACCOUNT_NOT_OF_CUSTOMER, ACCOUNT_NOT_SELECTABLE]
+        message: { type: string, maxLength: 200 }
+
+    # ---------- auth ----------
+    LoginRequest:
+      type: object
+      required: [branch_code, roll_no, password]
+      additionalProperties: false
+      properties:
+        branch_code: { $ref: '#/components/schemas/BranchCode' }
+        roll_no: { $ref: '#/components/schemas/RollNo' }
+        password: { type: string, minLength: 1, maxLength: 128, writeOnly: true }
+    OtpRequest:
+      type: object
+      required: [challenge_id, otp]
+      additionalProperties: false
+      properties:
+        challenge_id: { $ref: '#/components/schemas/Uuid' }
+        otp: { type: string, pattern: '^[0-9]{4,8}$', writeOnly: true }
+    LoginResult:
+      type: object
+      required: [status]
+      additionalProperties: false
+      properties:
+        status: { type: string, enum: [SIGNED_IN, OTP_REQUIRED] }
+        challenge_id: { $ref: '#/components/schemas/Uuid', description: 'Present when OTP_REQUIRED. Our id; the bank challenge ref stays server-side.' }
+        challenge_expires_at: { type: string, format: date-time }
+        me: { $ref: '#/components/schemas/Me', description: Present when SIGNED_IN. }
+    Me:
+      type: object
+      required: [user_id, roll_no, branch, roles, csrf_token, session, environment, settings]
+      additionalProperties: false
+      properties:
+        user_id: { $ref: '#/components/schemas/Uuid' }
+        roll_no: { $ref: '#/components/schemas/RollNo' }
+        display_name: { type: [string, 'null'], maxLength: 150 }
+        designation: { type: [string, 'null'], maxLength: 100 }
+        branch: { $ref: '#/components/schemas/Branch' }
+        roles: { type: array, maxItems: 6, uniqueItems: true, items: { $ref: '#/components/schemas/Role' }, description: Empty for a user with no role. }
+        cross_branch: { type: boolean, description: True when a role sees all branches (OPERATIONS, AUDITOR). }
+        csrf_token: { type: string, minLength: 43, maxLength: 64 }
+        session:
+          type: object
+          required: [idle_expires_at, absolute_expires_at]
+          properties:
+            idle_expires_at: { type: string, format: date-time }
+            absolute_expires_at: { type: string, format: date-time }
+        environment:
+          type: object
+          required: [mode, synthetic_data]
+          additionalProperties: false
+          properties:
+            mode: { type: string, enum: [dev, demo, uat, prod] }
+            synthetic_data: { type: boolean, description: True with the memory backend or any fake adapter; the UI shows a permanent banner. }
+        settings:
+          type: object
+          required: [maker_checker_enrolment, maker_checker_cancellation]
+          additionalProperties: false
+          properties:
+            maker_checker_enrolment: { type: boolean }
+            maker_checker_cancellation: { type: boolean }
+    Branch:
+      type: object
+      required: [code]
+      additionalProperties: false
+      properties:
+        code: { $ref: '#/components/schemas/BranchCode' }
+        name: { type: [string, 'null'], maxLength: 100 }
+
+    # ---------- reference ----------
+    RefCodes:
+      type: object
+      required: [GENDER, RELATION, OCCUPATION, STATE, CONSENT_METHOD, CANCEL_REASON]
+      additionalProperties: false
+      properties:
+        GENDER: { $ref: '#/components/schemas/RefCodeList' }
+        RELATION: { $ref: '#/components/schemas/RefCodeList' }
+        OCCUPATION: { $ref: '#/components/schemas/RefCodeList' }
+        STATE: { $ref: '#/components/schemas/RefCodeList' }
+        CONSENT_METHOD: { $ref: '#/components/schemas/RefCodeList' }
+        CANCEL_REASON: { $ref: '#/components/schemas/RefCodeList' }
+    RefCodeList:
+      type: array
+      maxItems: 200
+      items:
+        type: object
+        required: [code, label]
+        additionalProperties: false
+        properties:
+          code: { $ref: '#/components/schemas/RefCodeValue' }
+          label: { type: string, maxLength: 100 }
+    Plan:
+      type: object
+      required: [plan_code, name, rate]
+      additionalProperties: false
+      properties:
+        plan_code: { type: string, pattern: '^[A-Z0-9]{1,10}$' }
+        name: { type: string, maxLength: 100 }
+        rate:
+          oneOf:
+            - $ref: '#/components/schemas/PlanRate'
+            - type: 'null'
+    PlanRate:
+      type: object
+      required: [rate_id, sum_insured, net_premium, gst_amount, gross_premium, policy_term_days, effective_from, synthetic]
+      additionalProperties: false
+      properties:
+        rate_id: { $ref: '#/components/schemas/Uuid' }
+        sum_insured: { $ref: '#/components/schemas/Money' }
+        net_premium: { $ref: '#/components/schemas/Money' }
+        gst_amount: { $ref: '#/components/schemas/Money' }
+        gross_premium: { $ref: '#/components/schemas/Money' }
+        policy_term_days: { type: integer, minimum: 1, maximum: 3660 }
+        effective_from: { type: string, format: date }
+        synthetic: { type: boolean, description: 'True for seeded demo rates; the UI labels them "Synthetic rate - not an insurer rate".' }
+        note: { type: [string, 'null'], maxLength: 300 }
+
+    # ---------- customer lookup ----------
+    CustomerLookupRequest:
+      type: object
+      additionalProperties: false
+      description: Exactly one of the two.
+      oneOf:
+        - required: [account_no]
+        - required: [cif]
+      properties:
+        account_no: { type: string, pattern: '^[0-9]{6,30}$', writeOnly: true }
+        cif: { type: string, pattern: '^[A-Za-z0-9]{1,20}$', writeOnly: true }
+    CustomerLookupResult:
+      type: object
+      required: [customer, accounts, fetched_at]
+      additionalProperties: false
+      properties:
+        customer: { $ref: '#/components/schemas/CbsCustomer' }
+        accounts:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: '#/components/schemas/CbsAccount' }
+        fetched_at: { type: string, format: date-time }
+    CbsCustomer:
+      type: object
+      description: Only fields the CBS holds are filled (Q33); unknown fields are null.
+      required: [cif_masked, first_name, last_name]
+      additionalProperties: false
+      properties:
+        cif_masked: { $ref: '#/components/schemas/Masked' }
+        first_name: { $ref: '#/components/schemas/PersonName' }
+        middle_name: { type: [string, 'null'], maxLength: 60 }
+        last_name: { $ref: '#/components/schemas/PersonName' }
+        gender_code: { type: [string, 'null'], maxLength: 30 }
+        date_of_birth: { type: [string, 'null'], format: date }
+        mobile_masked: { type: [string, 'null'], maxLength: 15 }
+        city: { type: [string, 'null'], maxLength: 60 }
+        state_code: { type: [string, 'null'], maxLength: 30 }
+        kyc_status: { type: [string, 'null'], maxLength: 30 }
+        customer_status: { type: [string, 'null'], maxLength: 30 }
+        home_branch_code: { type: [string, 'null'], maxLength: 10 }
+    CbsAccount:
+      type: object
+      required: [account_key, account_no_masked, selectable]
+      additionalProperties: false
+      properties:
+        account_key: { $ref: '#/components/schemas/AccountKey' }
+        account_no_masked: { $ref: '#/components/schemas/Masked' }
+        account_type: { type: [string, 'null'], maxLength: 30 }
+        account_status: { type: [string, 'null'], maxLength: 30 }
+        branch_code: { type: [string, 'null'], maxLength: 10 }
+        joint_account: { type: [boolean, 'null'] }
+        holder_name: { type: [string, 'null'], maxLength: 150 }
+        selectable: { type: boolean, description: 'Status is in the configured allow-list (default ACTIVE; Assumption, Q33). Not an eligibility rule.' }
+
+    # ---------- enrolment input ----------
+    DraftCreate:
+      type: object
+      required: [lookup, debit_account_key]
+      additionalProperties: false
+      properties:
+        lookup: { $ref: '#/components/schemas/CustomerLookupRequest' }
+        debit_account_key: { $ref: '#/components/schemas/AccountKey' }
+        plan_code: { type: string, pattern: '^[A-Z0-9]{1,10}$' }
+    DraftPatch:
+      type: object
+      required: [version]
+      additionalProperties: false
+      minProperties: 2
+      properties:
+        version: { type: integer, minimum: 1 }
+        debit_account_key: { $ref: '#/components/schemas/AccountKey' }
+        plan_code: { type: string, pattern: '^[A-Z0-9]{1,10}$' }
+        insured: { $ref: '#/components/schemas/InsuredInput' }
+        nominees:
+          type: array
+          maxItems: 10
+          description: 'Technical bound only; the real nominee rules come from the domain expert.'
+          items: { $ref: '#/components/schemas/NomineeInput' }
+    InsuredInput:
+      type: object
+      additionalProperties: false
+      description: 'All optional in a draft; required at submit: first_name, last_name, gender_code, date_of_birth, mobile, address1, city, state_code, pincode, occupation_code, any_disability. Changing a field listed in `cbs_sourced_fields` returns CBS_SOURCED_READ_ONLY (Q33).'
+      x-required-on-submit: [first_name, last_name, gender_code, date_of_birth, mobile, address1, city, state_code, pincode, occupation_code, any_disability]
+      properties:
+        first_name: { $ref: '#/components/schemas/PersonName' }
+        middle_name: { type: [string, 'null'], maxLength: 60, pattern: "^[A-Za-z][A-Za-z .'-]*$" }
+        last_name: { $ref: '#/components/schemas/PersonName' }
+        gender_code: { $ref: '#/components/schemas/RefCodeValue' }
+        date_of_birth: { type: string, format: date }
+        mobile: { $ref: '#/components/schemas/Mobile' }
+        email: { type: [string, 'null'], format: email, maxLength: 150 }
+        address1: { type: string, minLength: 1, maxLength: 150 }
+        address2: { type: [string, 'null'], maxLength: 150 }
+        city: { type: string, minLength: 1, maxLength: 60 }
+        state_code: { $ref: '#/components/schemas/RefCodeValue' }
+        pincode: { $ref: '#/components/schemas/Pincode' }
+        occupation_code: { $ref: '#/components/schemas/RefCodeValue' }
+        other_occupation: { type: [string, 'null'], maxLength: 60 }
+        any_disability: { type: boolean }
+        disability_description: { type: [string, 'null'], maxLength: 500 }
+        guardian_name_address: { type: [string, 'null'], maxLength: 500 }
+    NomineeInput:
+      type: object
+      required: [name, relation_code, share_percent]
+      additionalProperties: false
+      description: Shares across nominees must total 100 (SHARES_NOT_100). Minor and appointee rules are not defined here (domain expert).
+      properties:
+        name: { $ref: '#/components/schemas/FullName' }
+        relation_code: { $ref: '#/components/schemas/RefCodeValue' }
+        share_percent: { $ref: '#/components/schemas/Percent' }
+        date_of_birth: { type: [string, 'null'], format: date }
+        age: { type: [integer, 'null'], minimum: 0, maximum: 120 }
+        gender_code: { type: [string, 'null'], pattern: '^[A-Z0-9_]{1,30}$' }
+        mobile: { type: [string, 'null'], pattern: '^[0-9]{10,15}$' }
+        email: { type: [string, 'null'], format: email, maxLength: 150 }
+        present_address: { type: [string, 'null'], maxLength: 300 }
+        permanent_address: { type: [string, 'null'], maxLength: 300 }
+        bank_account_no: { type: [string, 'null'], pattern: '^[0-9]{6,30}$', writeOnly: true }
+        ifsc: { type: [string, 'null'], pattern: '^[A-Z]{4}0[A-Z0-9]{6}$' }
+        bank_name: { type: [string, 'null'], maxLength: 100 }
+        account_holder_name: { type: [string, 'null'], maxLength: 150 }
+        appointee_name: { type: [string, 'null'], maxLength: 150 }
+        appointee_relation_code: { type: [string, 'null'], pattern: '^[A-Z0-9_]{1,30}$' }
+        appointee_dob: { type: [string, 'null'], format: date }
+        appointee_age: { type: [integer, 'null'], minimum: 0, maximum: 120 }
+        appointee_gender_code: { type: [string, 'null'], pattern: '^[A-Z0-9_]{1,30}$' }
+    VersionOnly:
+      type: object
+      required: [version]
+      additionalProperties: false
+      properties:
+        version: { type: integer, minimum: 1 }
+    SubmitRequest:
+      type: object
+      required: [version]
+      additionalProperties: false
+      properties:
+        version: { type: integer, minimum: 1 }
+        comment: { type: [string, 'null'], maxLength: 300 }
+    CommentedVersion:
+      type: object
+      required: [version, comment]
+      additionalProperties: false
+      properties:
+        version: { type: integer, minimum: 1 }
+        comment: { type: string, minLength: 1, maxLength: 300 }
+    ConsentRequest:
+      type: object
+      required: [version, method, reference]
+      additionalProperties: false
+      properties:
+        version: { type: integer, minimum: 1 }
+        method: { $ref: '#/components/schemas/RefCodeValue', description: 'CONSENT_METHOD code (mechanism open, Q28).' }
+        reference: { type: string, minLength: 1, maxLength: 60, pattern: '^[A-Za-z0-9/_ -]+$' }
+        confirmed_amount: { $ref: '#/components/schemas/Money', description: Must equal the insurer's gross premium shown to the customer. }
+    CancellationRequest:
+      type: object
+      required: [version, reason_code]
+      additionalProperties: false
+      properties:
+        version: { type: integer, minimum: 1 }
+        reason_code: { $ref: '#/components/schemas/RefCodeValue' }
+        remarks: { type: [string, 'null'], maxLength: 500 }
+    DecisionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        comment: { type: [string, 'null'], maxLength: 300 }
+    RejectRequest:
+      type: object
+      required: [comment]
+      additionalProperties: false
+      properties:
+        comment: { type: string, minLength: 1, maxLength: 300 }
+    ResolveRequest:
+      type: object
+      required: [action, version]
+      additionalProperties: false
+      properties:
+        version: { type: integer, minimum: 1 }
+        action: { type: string, enum: [RECHECK, CONFIRM] }
+        target_status: { type: string, enum: [PAID, PAYMENT_FAILED], description: Required for CONFIRM; becomes the approval's `proposed_status`. }
+        note: { type: string, minLength: 1, maxLength: 300, description: Required for CONFIRM; stored as the approval's maker comment (STR(300)). }
+        evidence_ref: { type: [string, 'null'], maxLength: 60, description: 'Bank or insurer ticket / reference, no personal data.' }
+
+    # ---------- enrolment output ----------
+    ActionResult:
+      type: object
+      required: [enrolment, outcome]
+      additionalProperties: false
+      properties:
+        enrolment: { $ref: '#/components/schemas/EnrolmentDetail' }
+        outcome:
+          type: object
+          required: [result]
+          additionalProperties: false
+          properties:
+            result:
+              type: string
+              enum: [DONE, REJECTED, QUEUED_FOR_RETRY, NEEDS_ATTENTION, PENDING_APPROVAL]
+            category: { type: [string, 'null'], enum: [VALIDATION, AUTH, NOT_FOUND, BUSINESS_RULE, UNAVAILABLE, TIMEOUT, UNKNOWN, CBS_DECLINED, null] }
+            message: { type: [string, 'null'], maxLength: 300, description: Insurer or CBS refusal text as received, for the maker. }
+            replayed: { type: boolean, description: True when served from an earlier request with the same Idempotency-Key. }
+    UserRef:
+      type: object
+      required: [user_id, roll_no]
+      additionalProperties: false
+      properties:
+        user_id: { $ref: '#/components/schemas/Uuid' }
+        roll_no: { $ref: '#/components/schemas/RollNo' }
+        display_name: { type: [string, 'null'], maxLength: 150 }
+    EnrolmentSummary:
+      type: object
+      required: [enrolment_id, our_reference_no, status, status_changed_at, created_at, branch_code, insured_name, created_by]
+      additionalProperties: false
+      properties:
+        enrolment_id: { $ref: '#/components/schemas/Uuid' }
+        our_reference_no: { type: string, maxLength: 30 }
+        status: { $ref: '#/components/schemas/EnrolmentStatus' }
+        status_changed_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        branch_code: { $ref: '#/components/schemas/BranchCode' }
+        insured_name: { type: string, maxLength: 182 }
+        plan_code: { type: [string, 'null'], maxLength: 10 }
+        gross_premium: { oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ] }
+        insurer_proposal_no: { type: [string, 'null'], maxLength: 30 }
+        certificate_no: { type: [string, 'null'], maxLength: 40 }
+        created_by: { $ref: '#/components/schemas/UserRef' }
+        attention_reason: { oneOf: [ { $ref: '#/components/schemas/AttentionReason' }, { type: 'null' } ] }
+    EnrolmentPage:
+      type: object
+      required: [items, page, page_size, total]
+      additionalProperties: false
+      properties:
+        items: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/EnrolmentSummary' } }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+    Insured:
+      allOf:
+        - $ref: '#/components/schemas/InsuredInput'
+        - type: object
+          required: [cbs_sourced_fields]
+          properties:
+            cbs_sourced_fields: { type: array, maxItems: 20, items: { type: string, maxLength: 40 } }
+    Nominee:
+      allOf:
+        - $ref: '#/components/schemas/NomineeInput'
+        - type: object
+          required: [seq]
+          properties:
+            seq: { type: integer, minimum: 1 }
+            bank_account_masked: { type: [string, 'null'], maxLength: 30 }
+    EnrolmentDetail:
+      type: object
+      required: [enrolment_id, our_reference_no, status, status_changed_at, version, branch, created_by, created_at,
+                 customer, debit_account, insured, nominees, postings, insurer_calls, status_history, approvals,
+                 documents, allowed_actions]
+      additionalProperties: false
+      properties:
+        enrolment_id: { $ref: '#/components/schemas/Uuid' }
+        our_reference_no: { type: string, maxLength: 30 }
+        status: { $ref: '#/components/schemas/EnrolmentStatus' }
+        status_changed_at: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
+        branch: { $ref: '#/components/schemas/Branch' }
+        created_by: { $ref: '#/components/schemas/UserRef' }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        customer:
+          type: object
+          required: [customer_id, cif_masked, cbs_fetched_at]
+          additionalProperties: false
+          properties:
+            customer_id: { $ref: '#/components/schemas/Uuid' }
+            cif_masked: { $ref: '#/components/schemas/Masked' }
+            cbs_fetched_at: { type: [string, 'null'], format: date-time }
+        debit_account: { $ref: '#/components/schemas/CbsAccount' }
+        insured: { $ref: '#/components/schemas/Insured' }
+        nominees: { type: array, maxItems: 10, items: { $ref: '#/components/schemas/Nominee' } }
+        plan:
+          oneOf:
+            - $ref: '#/components/schemas/Plan'
+            - type: 'null'
+        proposal:
+          oneOf:
+            - type: object
+              required: [insurer_proposal_no, created_at]
+              additionalProperties: false
+              properties:
+                insurer_proposal_no: { type: string, maxLength: 30 }
+                created_at: { type: string, format: date-time }
+            - type: 'null'
+        premium:
+          description: As returned by the insurer. `matches_rate = false` blocks payment (PREMIUM_MISMATCH) until a human decides (Q30).
+          oneOf:
+            - type: object
+              required: [net_premium, gst_amount, gross_premium, matches_rate]
+              additionalProperties: false
+              properties:
+                net_premium: { $ref: '#/components/schemas/Money' }
+                gst_amount: { $ref: '#/components/schemas/Money' }
+                gross_premium: { $ref: '#/components/schemas/Money' }
+                matches_rate: { type: boolean }
+            - type: 'null'
+        consent:
+          oneOf:
+            - type: object
+              required: [method, reference, consented_at]
+              additionalProperties: false
+              properties:
+                method: { $ref: '#/components/schemas/RefCodeValue' }
+                reference: { type: string, maxLength: 60 }
+                consented_at: { type: string, format: date-time }
+            - type: 'null'
+        certificate:
+          oneOf:
+            - type: object
+              required: [certificate_no, risk_start_date, risk_end_date, issued_at, pdf_available]
+              additionalProperties: false
+              properties:
+                certificate_no: { type: string, maxLength: 40 }
+                risk_start_date: { type: string, format: date }
+                risk_end_date: { type: string, format: date }
+                issued_at: { type: string, format: date-time }
+                pdf_available: { type: boolean }
+            - type: 'null'
+        postings:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [posting_id, kind, amount, status, cbs_request_ref, attempt_no, requested_at]
+            additionalProperties: false
+            properties:
+              posting_id: { $ref: '#/components/schemas/Uuid' }
+              kind: { type: string, enum: [PREMIUM, REFUND, REVERSAL] }
+              amount: { $ref: '#/components/schemas/Money' }
+              status: { type: string, enum: [PENDING, SUCCESS, FAILED, UNKNOWN, REVERSED] }
+              cbs_request_ref: { type: string, maxLength: 40 }
+              cbs_tran_id_masked: { type: [string, 'null'], maxLength: 40 }
+              cbs_tran_at: { type: [string, 'null'], format: date-time }
+              attempt_no: { type: integer, minimum: 1 }
+              error_code: { type: [string, 'null'], maxLength: 40 }
+              requested_at: { type: string, format: date-time }
+              completed_at: { type: [string, 'null'], format: date-time }
+        insurer_calls:
+          type: array
+          maxItems: 100
+          description: Summary only; payloads are never returned.
+          items:
+            type: object
+            required: [operation, attempt_no, status, started_at]
+            additionalProperties: false
+            properties:
+              operation: { type: string, maxLength: 40 }
+              attempt_no: { type: integer, minimum: 1 }
+              status: { type: string, enum: [SUCCESS, REJECTED, ERROR, UNKNOWN] }
+              error_category: { type: [string, 'null'], maxLength: 20 }
+              started_at: { type: string, format: date-time }
+              duration_ms: { type: [integer, 'null'], minimum: 0 }
+        status_history:
+          type: array
+          maxItems: 200
+          items:
+            type: object
+            required: [to_status, changed_at]
+            additionalProperties: false
+            properties:
+              from_status: { oneOf: [ { $ref: '#/components/schemas/EnrolmentStatus' }, { type: 'null' } ] }
+              to_status: { $ref: '#/components/schemas/EnrolmentStatus' }
+              reason: { type: [string, 'null'], maxLength: 300 }
+              actor: { oneOf: [ { $ref: '#/components/schemas/UserRef' }, { type: 'null' } ], description: null = system. }
+              correlation_id: { type: [string, 'null'], maxLength: 40 }
+              changed_at: { type: string, format: date-time }
+        approvals: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/Approval' } }
+        documents:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [document_id, kind, file_name, size_bytes, created_at]
+            additionalProperties: false
+            properties:
+              document_id: { $ref: '#/components/schemas/Uuid' }
+              kind: { type: string, enum: [COI, CONSENT_LETTER, ACKNOWLEDGEMENT] }
+              file_name: { type: string, maxLength: 150 }
+              size_bytes: { type: integer, minimum: 0 }
+              created_at: { type: string, format: date-time }
+        cancellation:
+          oneOf:
+            - type: object
+              required: [cancellation_id, reason_code, status, requested_by, requested_at]
+              additionalProperties: false
+              properties:
+                cancellation_id: { $ref: '#/components/schemas/Uuid' }
+                reason_code: { $ref: '#/components/schemas/RefCodeValue' }
+                status: { type: string, enum: [DRAFT, PENDING_CHECK, SUBMITTED, COMPLETED, REJECTED, FAILED] }
+                requested_by: { $ref: '#/components/schemas/UserRef' }
+                requested_at: { type: string, format: date-time }
+                refund_amount: { oneOf: [ { $ref: '#/components/schemas/Money' }, { type: 'null' } ], description: As returned by the insurer. }
+                completed_at: { type: [string, 'null'], format: date-time }
+            - type: 'null'
+        attention:
+          oneOf:
+            - type: object
+              required: [reason, since]
+              additionalProperties: false
+              properties:
+                reason: { $ref: '#/components/schemas/AttentionReason' }
+                since: { type: string, format: date-time }
+            - type: 'null'
+        allowed_actions:
+          type: array
+          uniqueItems: true
+          maxItems: 14
+          description: Computed by the server for this user and state; the UI shows only these buttons but the server re-checks every action.
+          items: { $ref: '#/components/schemas/AllowedAction' }
+
+    # ---------- approvals ----------
+    Approval:
+      type: object
+      required: [approval_id, entity_type, entity_id, action, status, maker, requested_at, can_decide]
+      additionalProperties: false
+      properties:
+        approval_id: { $ref: '#/components/schemas/Uuid' }
+        entity_type: { type: string, enum: [ENROLMENT, CANCELLATION] }
+        entity_id: { $ref: '#/components/schemas/Uuid' }
+        enrolment_id: { $ref: '#/components/schemas/Uuid' }
+        our_reference_no: { type: string, maxLength: 30 }
+        insured_name: { type: string, maxLength: 182 }
+        action: { $ref: '#/components/schemas/ApprovalAction' }
+        proposed_status:
+          type: [string, 'null']
+          enum: [PAID, PAYMENT_FAILED, null]
+          description: ATTENTION_RESOLVE only.
+        evidence_ref: { type: [string, 'null'], maxLength: 60, description: ATTENTION_RESOLVE only. }
+        status: { type: string, enum: [PENDING, APPROVED, REJECTED, WITHDRAWN] }
+        maker: { $ref: '#/components/schemas/UserRef' }
+        checker: { oneOf: [ { $ref: '#/components/schemas/UserRef' }, { type: 'null' } ] }
+        maker_comment: { type: [string, 'null'], maxLength: 300 }
+        checker_comment: { type: [string, 'null'], maxLength: 300 }
+        requested_at: { type: string, format: date-time }
+        decided_at: { type: [string, 'null'], format: date-time }
+        can_decide: { type: boolean, description: 'False when the caller requested it, or lacks the deciding role for this action (CHECKER for SUBMIT_SALE / CANCEL_CERTIFICATE, OPERATIONS for ATTENTION_RESOLVE). For ATTENTION_RESOLVE, `maker_comment` holds the note.' }
+    ApprovalAction:
+      type: string
+      enum: [SUBMIT_SALE, CANCEL_CERTIFICATE, ATTENTION_RESOLVE]
+      description: '`approval.action`. SUBMIT_SALE and ATTENTION_RESOLVE use entity_type ENROLMENT; CANCEL_CERTIFICATE uses CANCELLATION.'
+    ApprovalPage:
+      type: object
+      required: [items, page, page_size, total]
+      additionalProperties: false
+      properties:
+        items: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/Approval' } }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+
+    # ---------- dashboard ----------
+    Dashboard:
+      type: object
+      required: [as_of, scope, kpis]
+      additionalProperties: false
+      properties:
+        as_of: { type: string, format: date-time }
+        scope:
+          type: object
+          required: [all_branches]
+          additionalProperties: false
+          properties:
+            all_branches: { type: boolean }
+            branch_code: { oneOf: [ { $ref: '#/components/schemas/BranchCode' }, { type: 'null' } ] }
+        kpis:
+          type: object
+          required: [issued_today, issued_month, gross_premium_today, gross_premium_month, in_process, drafts, pending_approvals, needs_attention]
+          additionalProperties: false
+          properties:
+            issued_today: { type: integer, minimum: 0 }
+            issued_month: { type: integer, minimum: 0 }
+            gross_premium_today: { $ref: '#/components/schemas/Money' }
+            gross_premium_month: { $ref: '#/components/schemas/Money' }
+            in_process: { type: integer, minimum: 0, description: 'APPROVED, PROPOSAL_CREATED, PAYMENT_PENDING, PAYMENT_FAILED, PAID.' }
+            drafts: { type: integer, minimum: 0 }
+            pending_approvals: { type: integer, minimum: 0 }
+            needs_attention: { type: integer, minimum: 0 }
+        queues:
+          type: object
+          additionalProperties: false
+          description: At most 5 items each; a queue is present only if the caller's roles cover it.
+          properties:
+            my_drafts: { type: array, maxItems: 5, items: { $ref: '#/components/schemas/EnrolmentSummary' } }
+            in_process: { type: array, maxItems: 5, items: { $ref: '#/components/schemas/EnrolmentSummary' } }
+            awaiting_my_approval: { type: array, maxItems: 5, items: { $ref: '#/components/schemas/Approval' }, description: 'CHECKER: sales and cancellations; OPERATIONS: ATTENTION_RESOLVE.' }
+            needs_attention: { type: array, maxItems: 5, items: { $ref: '#/components/schemas/EnrolmentSummary' } }
+            recently_issued: { type: array, maxItems: 5, items: { $ref: '#/components/schemas/EnrolmentSummary' } }
