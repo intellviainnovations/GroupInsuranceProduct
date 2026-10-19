@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { ApiError } from "../api/client";
 import { api } from "../api/endpoints";
 import { labelFor, loadPlans, loadRefCodes } from "../api/reference";
-import type { CustomerLookupResult, EnrolmentDetail, FieldError, InsuredInput, NomineeInput, Plan, RefCodes } from "../api/types";
+import type { CustomerLookupResult, EnrolmentDetail, InsuredInput, NomineeInput, Plan, RefCodes } from "../api/types";
 import { strings } from "../strings";
 import { Card, DefList, ErrorState, Field, PageHeader, Pill, Spinner, useAsync } from "../ui/components";
 import { formatDate, formatDateTime, formatInr, show } from "../ui/format";
@@ -40,7 +40,7 @@ function Stepper({ current }: { current: number }) {
 function fieldErrors(err: unknown, prefix: string): Record<string, string> {
   const out: Record<string, string> = {};
   if (err instanceof ApiError) {
-    for (const fe of err.fields as FieldError[]) {
+    for (const fe of err.fields) {
       const path = fe.field.startsWith(prefix) ? fe.field.slice(prefix.length) : fe.field;
       out[path] = fe.message ?? fe.code;
     }
@@ -96,7 +96,7 @@ export function NewSale() {
       <PageHeader title={s.heading} />
       <Stepper current={0} />
       <Card title={s.lookupHeading}>
-        <form onSubmit={lookup} className="space-y-4 p-4" autoComplete="off">
+        <form onSubmit={(ev) => void lookup(ev)} className="space-y-4 p-4" autoComplete="off">
           <p className="text-sm text-slate-500">{s.lookupHelp}</p>
           <div role="radiogroup" className="inline-flex rounded-md border border-slate-300 p-0.5">
             {(["account_no", "cif"] as const).map((m) => (
@@ -216,7 +216,7 @@ function toInsuredPatch(form: InsuredForm, original: InsuredInput, cbs: Set<stri
     } else if (v) out[k] = v;
     else if (NULLABLE.has(k)) out[k] = null;
   }
-  return out as InsuredInput;
+  return out;
 }
 
 interface NomineeForm {

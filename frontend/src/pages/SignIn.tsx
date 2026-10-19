@@ -71,7 +71,7 @@ export function SignIn() {
             </div>
           )}
           {!challenge ? (
-            <form onSubmit={onLogin} className="space-y-4" autoComplete="off">
+            <form onSubmit={(ev) => void onLogin(ev)} className="space-y-4" autoComplete="off">
               <div>
                 <label htmlFor="branch" className="field-label">
                   {s.branchCode}
@@ -95,7 +95,7 @@ export function SignIn() {
               </button>
             </form>
           ) : (
-            <form onSubmit={onOtp} className="space-y-4" autoComplete="off">
+            <form onSubmit={(ev) => void onOtp(ev)} className="space-y-4" autoComplete="off">
               <div>
                 <label htmlFor="otp" className="field-label">
                   {s.otp}

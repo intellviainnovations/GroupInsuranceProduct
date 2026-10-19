@@ -35,7 +35,7 @@ function ConfirmDialog({ item, onClose, onDone }: { item: EnrolmentSummary; onCl
 
   return (
     <Modal title={`${s.confirmTitle}: ${item.our_reference_no}`} onClose={onClose}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={(ev) => void submit(ev)} className="space-y-4">
         <fieldset>
           <legend className="field-label">{s.targetStatus}</legend>
           <div className="space-y-2">

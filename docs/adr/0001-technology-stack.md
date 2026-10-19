@@ -57,6 +57,8 @@ Approved by accepting this ADR. Any other dependency needs a human's approval (C
 | `typescript-eslint` | dev only | Lets ESLint parse and lint TypeScript sources; nothing ships to the browser |
 Icons are inline SVG (no icon package). The remaining Q35 items (`jsdom`, `@vitejs/plugin-react`, `@eslint/js`, `httpx2`, Python build backend) are still open.
 
+**Amendment 2 (product owner, Decided 2026-10-19):** TypeScript is pinned to 6.0.x (currently `6.0.3`), not 7.x. `typescript-eslint` 8.x (currently `8.71.2`) supports only `typescript >=4.8.4 <6.1.0`, and TypeScript 7 ships no JavaScript compiler API for it to use. Revisit when `typescript-eslint` supports TypeScript 7.
+
 ### Repository layout (target)
 `src/backend/` Python package; `frontend/` React source (not released, only its build output); `migrations/` Alembic; `config-templates/`; `tests/`. See `docs/design/architecture.md`.
 

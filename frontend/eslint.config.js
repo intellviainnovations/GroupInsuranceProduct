@@ -1,9 +1,19 @@
-// ESLint in the ADR-0001 baseline cannot parse TypeScript on its own
-// (needs typescript-eslint, a needs-human request in task T-003). Until then it
-// lints the plain JavaScript config and script files only; TypeScript is checked
-// by `npm run typecheck`, and scripts/check-security.mjs scans the TS sources.
-export default [
-  { ignores: ["dist/", "node_modules/", "src/", "vite.config.ts"] },
+// Plain JS config/scripts use core rules; TypeScript sources use typescript-eslint's
+// recommended type-checked rules (ADR-0001 Amendments 1 and 2).
+// scripts/check-security.mjs still runs after ESLint (see `npm run lint`).
+import tseslint from "typescript-eslint";
+
+const coreRules = {
+  "no-var": "error",
+  "prefer-const": "error",
+  eqeqeq: "error",
+  "no-eval": "error",
+  "no-implied-eval": "error",
+  "no-new-func": "error",
+};
+
+export default tseslint.config(
+  { ignores: ["dist/", "node_modules/"] },
   {
     files: ["**/*.js", "**/*.mjs"],
     languageOptions: {
@@ -11,15 +21,14 @@ export default [
       sourceType: "module",
       globals: { process: "readonly", console: "readonly" },
     },
-    rules: {
-      "no-undef": "error",
-      "no-unused-vars": "error",
-      "no-var": "error",
-      "prefer-const": "error",
-      eqeqeq: "error",
-      "no-eval": "error",
-      "no-implied-eval": "error",
-      "no-new-func": "error",
-    },
+    rules: { ...coreRules, "no-undef": "error", "no-unused-vars": "error" },
   },
-];
+  {
+    files: ["src/**/*.{ts,tsx}", "vite.config.ts"],
+    extends: [...tseslint.configs.recommendedTypeChecked],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: coreRules,
+  },
+);

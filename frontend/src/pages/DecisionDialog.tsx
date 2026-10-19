@@ -37,7 +37,7 @@ export function DecisionDialog({
 
   return (
     <Modal title={`${decision === "approve" ? s.approve : s.reject}: ${approval.our_reference_no ?? ""}`} onClose={onClose}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={(ev) => void submit(ev)} className="space-y-4">
         <p className="text-sm text-slate-600">
           {s.actionNames[approval.action]} - {approval.insured_name ?? ""}
           {approval.proposed_status && ` - ${s.proposedStatus}: ${strings.status[approval.proposed_status]}`}
