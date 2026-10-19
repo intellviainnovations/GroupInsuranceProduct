@@ -62,7 +62,7 @@ React with TypeScript, built by Vite to static files. Screens for Phase 1: sign-
 ## Deployment
 Signed bundle containing the backend (pinned wheels for offline install), prebuilt frontend assets, Alembic migrations, configuration templates, runbook and release notes (D-007). TLS termination, reverse proxy and WAF are the bank's (Q20). Network paths from the bank environment to the insurer's production gateway, to the CBS transaction path and to the CBS report-server database are bank-arranged (Q26, Q27, Q33). The report-server account is read-only.
 
-## Mapping to the clearance matrix (owner: reviewer)
+## Mapping to the clearance matrix (owner: security-reviewer)
 Authentication and sessions C-01 to C-09 are designed in `bank-auth.md`; access control C-10 to C-14 in the layout and cross-cutting table above; input and business-logic controls C-15 to C-22 in the spec and data model; transport and header controls C-23 to C-28 in hardening and the bank's proxy; data protection C-29 to C-31 in ADR-0002; logging C-32 and C-33 in the audit design. Statuses stay `Not started` until evidence exists.
 
 ## First build tasks (hand to the orchestrator)

@@ -1,13 +1,13 @@
 # Security clearance matrix
 
-Working tracker for the bank's Application Security Clearance Checklist (v3.0, Jan 2025; a newer version may exist, see knowledge-repo Q15). **Owner of this file: reviewer agent.** The bank's original workbook is not stored in this repo; item numbers below point into it (`W` = Web sheet, `A` = API sheet). Mobile rows are added when mobile starts (D-001).
+Working tracker for the bank's Application Security Clearance Checklist (v3.0, Jan 2025; a newer version may exist, see knowledge-repo Q15). **Owner of this file: security-reviewer agent.** The bank's original workbook is not stored in this repo; item numbers below point into it (`W` = Web sheet, `A` = API sheet). Mobile rows are added when mobile starts (D-001).
 
 ## How to use
 - The bank wants a YES / NO / NA answer **with evidence** per control (code snippet, config screenshot, scan output). NA needs a written justification. A control we cannot meet needs a risk acceptance signed by the business head. Clearance is given only after controls are implemented.
 - **Status:** `Not started` / `Designed` / `Built` / `Evidenced` (YES, evidence path filled) / `NA` (reason + bank acceptance) / `Gap` (needs risk acceptance).
 - Update a row only with evidence you have seen. Evidence is a path or link, never pasted secrets or real data.
 - Web rows (`W`) apply to any browser-facing tier we deliver; API rows (`A`) apply to the backend. Frontend stack is not chosen yet, so W rows stay `Not started` until it is.
-- Owner: **be** backend, **fe** frontend, **arch** architect, **rev** reviewer, **hum** human (us), **bank** bank-side.
+- Owner: **be** backend, **fe** frontend, **arch** architect, **rev** security-reviewer, **hum** human (us), **bank** bank-side.
 
 ## Controls (merged where Web and API overlap)
 All rows start as `Not started`. Evidence column is filled as work lands.
@@ -90,6 +90,6 @@ Items the bank also needs with the submission. Reviewer drafts from the repo; hu
 | Connections to bank servers (protocol, ports, API, websockets); DC and DR servers touched; security per connection | Contracts, deployment design | arch, bank |
 | Data stored by the product and where; hardware needs; OS and versions | ADR-0001, deployment design | arch |
 | Controls available: data wiping, user management, logs; user types and privileges | Design, matrix | rev, be |
-| Functional-test and UAT sign-off | QA reports, UAT | qa, hum |
+| Functional-test and UAT sign-off | QA reports, UAT | qa-backend, qa-frontend, hum |
 | Pre-implementation IS audit, VAPT report and closure status, SOC onboarding | Bank | bank |
 | Maintenance model; previous clearance reference (if any); signatures (lead developer, CM, AGM/DGM) | Company, bank | hum, bank |

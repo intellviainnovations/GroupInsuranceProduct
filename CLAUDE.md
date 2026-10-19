@@ -16,8 +16,8 @@ Build-ready. Stack is **Accepted** in `docs/adr/0001-technology-stack.md` (Pytho
 
 ## Working rules
 - Read only what the task needs. Specs: `docs/specs`. Interfaces: `docs/contracts`. Decisions: `docs/adr`.
-- Use `docs/templates/task-handoff.md` for every assignment and `task-result.md` for every result.
-- **Builder never verifies own work.** QA writes tests from the spec; a separate reviewer checks the PR.
+- **Plan before work:** every job starts with a plan (`docs/templates/job-plan.md`) that the human approves before any agent runs. Then `docs/templates/task-handoff.md` for every assignment and `task-result.md` for every result. Keep contexts small: agents start from `docs/agents/context/<area>.md` and read only the files the handoff names.
+- **Builder never verifies own work.** QA (`qa-backend`, `qa-frontend`) and security review (`security-reviewer`) are invoked by the human, not after every iteration. They are **required before merging to `main` or delivering a UAT bundle**, and recommended after security-sensitive changes.
 - **Contracts before parallel work.** Define the interface (e.g. insurer adapter) in `docs/contracts` first.
 - **Stop and ask a human** on: insurance rules that are ambiguous, any premium/payout/eligibility calculation, security-sensitive choices, schema changes, new dependencies, conflicting specs.
 - Synthetic data only. Never real member/customer data, credentials, keys or bank-confidential documents in this repo.
@@ -29,5 +29,6 @@ Deliverables are signed bundles built from `release/allowlist.txt`. UAT/producti
 
 ## Agents
 - Main-session playbook: `docs/agents/orchestrator.md` (subagents cannot spawn subagents, so the orchestrator runs as the main session).
-- Subagents: `.claude/agents/` (architect, qa, backend, frontend, reviewer). A release agent is added when bundling starts.
-- Bank security clearance: follow `docs/security/clearance-matrix.md` (owner: reviewer). Controls need evidence; the bank's original checklist workbook is not stored in this repo.
+- Subagents: `.claude/agents/`. Design: `architect`, `ux-designer`, `ui-designer`. Build: `backend`, `frontend`. On demand only: `qa-backend`, `qa-frontend`, `security-reviewer`, `api-reviewer`. A release agent is added when bundling starts. Start sessions from this repo's directory so they register.
+- Design inputs for screens: `docs/design/design-brief.md`, `docs/design/design-system.md`, `docs/design/ux/`.
+- Bank security clearance: follow `docs/security/clearance-matrix.md` (owner: security-reviewer). Controls need evidence; the bank's original checklist workbook is not stored in this repo.
