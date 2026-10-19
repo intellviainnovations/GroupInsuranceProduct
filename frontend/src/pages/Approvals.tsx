@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { api } from "../api/endpoints";
-import type { Approval, ApprovalAction, ApprovalPage, ApprovalStatus } from "../api/types";
+import type { Approval, ApprovalAction, ApprovalPage, ApprovalStatus } from "../api/model";
 import { strings } from "../strings";
 import { Card, EmptyState, ErrorState, PageHeader, Pill, Spinner, useAsync } from "../ui/components";
 import { formatDateTime } from "../ui/format";

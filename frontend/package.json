@@ -11,7 +11,9 @@
     "lint": "eslint . && node scripts/check-security.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build": "vite build"
+    "build": "vite build",
+    "gen:api": "node scripts/gen-api-types.mjs",
+    "check:api": "node scripts/gen-api-types.mjs --check"
   },
   "dependencies": {
     "react": "19.3.1",

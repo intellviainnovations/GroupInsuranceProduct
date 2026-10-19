@@ -1,6 +1,6 @@
 // All user-visible text lives here so the app can be localised later (Q17).
 // Components must not contain literal user-facing strings.
-import type { AllowedAction, AttentionReason, EnrolmentStatus, OutcomeResult, Role } from "./api/types";
+import type { AllowedAction, AttentionReason, EnrolmentStatus, OutcomeResult, Role } from "./api/model";
 
 export const strings = {
   appName: "Group Insurance Desk",

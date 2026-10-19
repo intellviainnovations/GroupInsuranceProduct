@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { ApiError, newIdempotencyKey } from "../api/client";
-import type { ActionResult } from "../api/types";
+import type { ActionResult } from "../api/model";
 import { strings } from "../strings";
 import { useToast } from "./toast";
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
 import { api } from "../api/endpoints";
-import type { AttentionReason, EnrolmentPage, EnrolmentSummary } from "../api/types";
+import type { AttentionReason, EnrolmentPage, EnrolmentSummary } from "../api/model";
 import { useAuth } from "../auth/AuthContext";
 import { strings } from "../strings";
 import { Card, EmptyState, ErrorState, Field, Modal, PageHeader, Spinner, StatusBadge, useAsync } from "../ui/components";

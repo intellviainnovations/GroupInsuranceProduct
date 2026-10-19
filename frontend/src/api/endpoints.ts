@@ -28,7 +28,7 @@ import type {
   ResolveRequest,
   SubmitRequest,
   VersionOnly,
-} from "./types";
+} from "./model";
 
 const enc = encodeURIComponent;
 

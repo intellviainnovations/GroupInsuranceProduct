@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { ApiError, setCsrfToken, setUnauthenticatedHandler } from "../api/client";
 import { api } from "../api/endpoints";
 import { clearReferenceCache } from "../api/reference";
-import type { LoginRequest, LoginResult, Me, Role } from "../api/types";
+import type { LoginRequest, LoginResult, Me, Role } from "../api/model";
 
 type SignOutReason = "signed_out" | "expired" | null;
 

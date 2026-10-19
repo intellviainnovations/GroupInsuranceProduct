@@ -66,6 +66,8 @@ jobs:
         run: npm run lint
       - name: Type check
         run: npm run typecheck
+      - name: API types match the OpenAPI snapshot
+        run: npm run check:api
       - name: Tests
         run: npm run test
       - name: Build

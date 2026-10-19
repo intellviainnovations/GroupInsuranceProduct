@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { EnrolmentStatus } from "../api/types";
+import type { EnrolmentStatus } from "../api/model";
 import { strings } from "../strings";
 import { correlationOf, errorText } from "./format";
 import { IconAlert, IconX } from "./icons";

@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { api } from "../api/endpoints";
-import type { Approval, Dashboard as DashboardData, EnrolmentSummary } from "../api/types";
+import type { Approval, Dashboard as DashboardData, EnrolmentSummary } from "../api/model";
 import { strings } from "../strings";
 import { Card, EmptyState, ErrorState, PageHeader, Spinner, StatusBadge, useAsync } from "../ui/components";
 import { formatDateTime, formatInr } from "../ui/format";

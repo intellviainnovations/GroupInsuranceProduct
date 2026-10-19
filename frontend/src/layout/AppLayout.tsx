@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { NavLink, Outlet } from "react-router";
-import type { Role } from "../api/types";
+import type { Role } from "../api/model";
 import { useAuth } from "../auth/AuthContext";
 import { strings } from "../strings";
 import { IconAlert, IconHome, IconList, IconLogout, IconMenu, IconPlus, IconShieldCheck, IconUser } from "../ui/icons";

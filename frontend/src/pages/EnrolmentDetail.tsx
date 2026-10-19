@@ -3,7 +3,7 @@ import type { FormEvent, ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { api } from "../api/endpoints";
 import { labelFor, loadRefCodes } from "../api/reference";
-import type { ActionResult, AllowedAction, Approval, EnrolmentDetail as Detail, RefCodes } from "../api/types";
+import type { ActionResult, AllowedAction, Approval, EnrolmentDetail as Detail, RefCodes } from "../api/model";
 import { strings } from "../strings";
 import { Card, DefList, EmptyState, ErrorState, Field, Modal, Pill, Spinner, StatusBadge, useAsync } from "../ui/components";
 import { formatDate, formatDateTime, formatInr, show } from "../ui/format";

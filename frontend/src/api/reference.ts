@@ -1,6 +1,6 @@
 // Session-scoped cache for reference data (codes and plans). Cleared on sign-in/out.
 import { api } from "./endpoints";
-import type { Plan, RefCodes } from "./types";
+import type { Plan, RefCodes } from "./model";
 
 let codes: Promise<RefCodes> | null = null;
 let plans: Promise<Plan[]> | null = null;

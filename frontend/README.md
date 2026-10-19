@@ -1,6 +1,6 @@
 # Frontend (staff web app): Group Insurance Desk
 
-React + TypeScript, built by Vite to static files (no Node runtime on bank hosts). Dependencies: the ADR-0001 baseline (`react`, `react-dom`, `react-router`, `typescript`, `vite`, `vitest`, `eslint`) plus Amendment 1 (`tailwindcss`, `@tailwindcss/vite`, `@types/react`, `@types/react-dom`). All versions are pinned exactly; `package-lock.json` is committed.
+React + TypeScript, built by Vite to static files (no Node runtime on bank hosts). Dependencies: the ADR-0001 baseline (`react`, `react-dom`, `react-router`, `typescript`, `vite`, `vitest`, `eslint`), plus Amendment 1 (`tailwindcss`, `@tailwindcss/vite`, `@types/react`, `@types/react-dom`, `typescript-eslint`) and Amendment 2 (TypeScript pinned to 6.0.x). All versions are pinned exactly; `package-lock.json` is committed.
 
 Screens: sign-in (with OTP step), dashboard, enrolment list and detail (with flow actions), new-sale wizard, approvals, needs-attention queue. Buttons come only from the server's `allowed_actions` / `can_decide`; amounts are shown exactly as the API returns them (formatted as INR for display only).
 
@@ -69,12 +69,14 @@ The accounts for these codes are listed in `docs/design/repositories.md` section
 | Dev server (with `/api` proxy) | `npm run dev` |
 | Lint + security scan | `npm run lint` |
 | Type check | `npm run typecheck` |
+| Regenerate API types from the OpenAPI snapshot | `npm run gen:api` |
+| Check API types are up to date (CI) | `npm run check:api` |
 | Tests | `npm run test` |
 | Production build (output in `dist/`) | `npm run build` |
 
 ## Notes
 - Code layout:
-  - `src/api/`: hand-maintained `types.ts` matching the OpenAPI contract, plus `client.ts`, a fetch wrapper that sends the cookie, `X-CSRF-Token` from login or `/me` (kept in memory only) and a `crypto.randomUUID()` `Idempotency-Key` per user intent.
+  - `src/api/`: `types.ts` is **generated** from `docs/contracts/staff-api.openapi.snapshot.json` by `scripts/gen-api-types.mjs` (do not edit it). `model.ts` holds UI aliases derived from it. `client.ts` is a fetch wrapper that sends the cookie, `X-CSRF-Token` from login or `/me` (kept in memory only) and a `crypto.randomUUID()` `Idempotency-Key` per user intent.
   - `src/auth/`: the session context.
   - `src/ui/`: components, icons and toasts.
   - `src/pages/`: the screens.
@@ -82,4 +84,4 @@ The accounts for these codes are listed in `docs/design/repositories.md` section
 - All user-visible text is in `src/strings.ts` (localisation later, Q17).
 - The production build has source maps off, no inline scripts and no `data:` assets (strict CSP). Serve `dist/` at the site root, behind the same origin as `/api`.
 - `scripts/check-security.mjs` (part of `npm run lint`) fails on `dangerouslySetInnerHTML`, `innerHTML =`, browser storage APIs, `eval` and inline scripts.
-- **Known gap:** `typescript-eslint` (approved) is not installed. Its current release (8.71.2) needs `typescript < 6.1`, but the baseline pins TypeScript 7.0.2, which ships no JavaScript compiler API. ESLint therefore still covers only the `.js`/`.mjs` files. TypeScript is checked by `npm run typecheck` and the security scan.
+- ESLint uses `typescript-eslint` with its recommended type-checked rules on `src/**/*.{ts,tsx}`. TypeScript stays on 6.0.x until `typescript-eslint` supports 7 (ADR-0001 Amendment 2).

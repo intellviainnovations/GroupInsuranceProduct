@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
-import type { Role } from "./api/types";
+import type { Role } from "./api/model";
 import { useAuth } from "./auth/AuthContext";
 import { AppLayout } from "./layout/AppLayout";
 import { Approvals } from "./pages/Approvals";

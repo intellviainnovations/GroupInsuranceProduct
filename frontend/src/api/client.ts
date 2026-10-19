@@ -2,7 +2,7 @@
 // - Session: HttpOnly cookie only (credentials: "same-origin"); nothing persisted in the browser.
 // - CSRF: token held in memory, sent as X-CSRF-Token on every POST/PATCH.
 // - Idempotency-Key: one UUID per user intent, supplied by the caller.
-import type { ErrorBody, ErrorCode, FieldError } from "./types";
+import type { ErrorBody, ErrorCode, FieldError } from "./model";
 
 export const API_BASE = "/api/v1";
 

@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { ApiError } from "../api/client";
 import { api } from "../api/endpoints";
 import { labelFor, loadPlans, loadRefCodes } from "../api/reference";
-import type { CustomerLookupResult, EnrolmentDetail, InsuredInput, NomineeInput, Plan, RefCodes } from "../api/types";
+import type { CustomerLookupResult, EnrolmentDetail, InsuredInput, NomineeInput, Plan, RefCodes } from "../api/model";
 import { strings } from "../strings";
 import { Card, DefList, ErrorState, Field, PageHeader, Pill, Spinner, useAsync } from "../ui/components";
 import { formatDate, formatDateTime, formatInr, show } from "../ui/format";

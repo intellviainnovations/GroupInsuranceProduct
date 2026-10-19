@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { api } from "../api/endpoints";
-import type { Approval } from "../api/types";
+import type { Approval } from "../api/model";
 import { strings } from "../strings";
 import { Field, Modal } from "../ui/components";
 import { useAction } from "../ui/useAction";
