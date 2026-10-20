@@ -24,6 +24,11 @@ Build-ready. Stack is **Accepted** in `docs/adr/0001-technology-stack.md` (Pytho
 - Work on a branch; never push to `main`. Do not open a PR unless asked. Humans merge to release and hold signing keys.
 - Run `scripts/check_repo.sh` before pushing.
 
+## Versioning
+- Branches: `main` (reviewed baseline) and `develop` (working branch, name never changes). No version in branch names.
+- Every set of changes is released as an annotated tag `vMAJOR.MINOR.PATCH` on `develop` (knowledge repo D-043).
+- When tagging, bump the same number in `pyproject.toml`, `frontend/package.json` and `package-lock.json` (root entries), and `info.version` in `docs/contracts/staff-api.openapi.yaml` (and its snapshot if the contract changed); add an entry to `CHANGELOG.md`.
+
 ## Release
 Deliverables are signed bundles built from `release/allowlist.txt`. UAT/production never clone this repo. See the knowledge repo `docs/delivery-and-operations.md`.
 
