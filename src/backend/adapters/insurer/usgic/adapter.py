@@ -91,6 +91,8 @@ class UsgicConfig:
     default_token_ttl_seconds: int = 3000
     connect_timeout_seconds: float = 5.0
     read_timeout_seconds: float = 30.0
+    # ABHI Azure APIM subscription key; sent as Ocp-Apim-Subscription-Key header.
+    apim_subscription_key: str | None = None  # noqa: S105 - a config field name, not a secret
 
 
 class _AuthFailure(Exception):
@@ -274,7 +276,14 @@ class UsgicInsurer:
             if force_refresh or token is None or self._clock() >= token.expires_at - margin:
                 token = self._fetch_token()
                 self._token = token
-        return {"Authorization": f"Bearer {token.jwt}", self._config.token_header: token.token_id}
+        headers = {
+            "Authorization": f"Bearer {token.jwt}",
+            self._config.token_header: token.token_id,
+        }
+        # ABHI Azure APIM authentication: subscription key in every request.
+        if self._config.apim_subscription_key:
+            headers["Ocp-Apim-Subscription-Key"] = self._config.apim_subscription_key
+        return headers
 
     def _call(self, method: str, body: Mapping[str, Any]) -> dict[str, Any]:
         """One operation, refreshing the token once on an authentication failure."""

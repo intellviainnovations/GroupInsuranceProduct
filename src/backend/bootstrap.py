@@ -118,7 +118,15 @@ def build_container(settings: Settings) -> Container:
         insurer = FakeInsurer(seed["fake_insurer"], delay_seconds=delay, clock=clock.now)
         fakes["insurer"] = insurer
     elif insurer_choice == "usgic":
-        cipher: PayloadCipher = build_cipher(settings.usgic_cipher)
+        cipher_key: bytes | None = None
+        if settings.usgic_cipher == "aes-256-cbc" and settings.usgic_cipher_key:
+            cipher_key = settings.usgic_cipher_key.get_secret_value().encode("utf-8")
+        cipher: PayloadCipher = build_cipher(settings.usgic_cipher, key=cipher_key)
+
+        # ABHI APIM subscription key for Azure API Management authentication.
+        abhi_key: str | None = None
+        if settings.abhi_apim_subscription_key:
+            abhi_key = settings.abhi_apim_subscription_key.get_secret_value()
 
         def code_mapper(category: str, our_code: str) -> str | None:
             with uow() as u:
@@ -139,6 +147,7 @@ def build_container(settings: Settings) -> Container:
                 default_token_ttl_seconds=settings.usgic_token_default_ttl_seconds,
                 connect_timeout_seconds=settings.usgic_connect_timeout_seconds,
                 read_timeout_seconds=settings.usgic_read_timeout_seconds,
+                apim_subscription_key=abhi_key,
             ),
             cipher,
             code_mapper,

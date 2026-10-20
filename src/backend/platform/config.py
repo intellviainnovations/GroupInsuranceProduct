@@ -86,9 +86,10 @@ class Settings(BaseModel):
     usgic_product_code: str | None = None
     usgic_intermediary_code: str | None = None
     usgic_intermediary_branch_code: str | None = None
-    usgic_cipher: Literal["unconfigured"] = "unconfigured"
+    usgic_cipher: Literal["unconfigured", "aes-256-cbc"] = "unconfigured"
     usgic_cipher_key: SecretStr | None = None
-    usgic_cipher_iv: SecretStr | None = None
+    # ABHI API (Azure APIM) subscription key, sent as Ocp-Apim-Subscription-Key header.
+    abhi_apim_subscription_key: SecretStr | None = None
     usgic_token_header: str = "TokenId"  # noqa: S105 - a header name, not a secret
     usgic_token_refresh_margin_seconds: int = Field(default=300, ge=0)
     usgic_token_default_ttl_seconds: int = Field(default=3000, gt=0)
@@ -161,6 +162,16 @@ class Settings(BaseModel):
             for name in ("usgic_base_url", "usgic_user_name", "usgic_product_code"):
                 if not getattr(self, name):
                     raise ValueError(f"{name} is required when insurer_adapter is 'usgic'")
+            if self.usgic_cipher == "aes-256-cbc":
+                if self.usgic_cipher_key is None:
+                    raise ValueError(
+                        "usgic_cipher_key is required when usgic_cipher is 'aes-256-cbc'"
+                    )
+                key_len = len(self.usgic_cipher_key.get_secret_value().encode("utf-8"))
+                if key_len != 32:
+                    raise ValueError(
+                        "usgic_cipher_key must be exactly 32 bytes for AES-256"
+                    )
         return self
 
 
